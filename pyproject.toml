@@ -35,3 +35,14 @@ Documentation = "https://github.com/j-mcnamara/smoosh#readme"
 
 [project.scripts]
 smoosh = "smoosh.cli:main"
+
+[tool.hatch.build]
+include = [
+  "src/smoosh/**/*.py",
+  "README.md",
+  "LICENSE",
+]
+exclude = [
+  "*.pyc",
+  "__pycache__",
+]

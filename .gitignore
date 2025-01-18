@@ -67,7 +67,7 @@ logs/
 # Local development configuration
 smoosh.yaml
 .smoosh.yaml
-prompt.md
+notes/
 
 # OS specific files
 .DS_Store
