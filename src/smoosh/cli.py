@@ -1,9 +1,10 @@
 """Command line interface for smoosh."""
+from time import sleep
+
 import click
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import track
-from time import sleep
 
 console = Console()
 
