@@ -78,8 +78,6 @@ def format_tree(
         name = f"{node.name}/"
     else:
         name = node.name
-        if include_indicators and node.is_python:
-            name = f"{name} 🐍"
 
     # Build the line with proper prefixes
     if prefix:
