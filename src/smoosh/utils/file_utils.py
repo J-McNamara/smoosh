@@ -42,6 +42,7 @@ DEFAULT_PYTHON_IGNORE = {
     "**/*.swp",
     # Version control
     "**/.git/",
+    "**/.git",
     "**/.hg/",
     "**/.svn/",
     # Misc

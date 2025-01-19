@@ -82,6 +82,9 @@ def analyze_repository(
             gitignore_root = git_root if git_root else root_path
             gitignore_patterns = get_gitignore_patterns(gitignore_root)
 
+        # Always exclude the .git directory
+        gitignore_patterns.add(".git/")
+
         # Get size limit from config
         max_size_mb = config["output"]["size_limits"]["file_max_mb"]
         if force_cat:
