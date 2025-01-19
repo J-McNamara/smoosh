@@ -62,15 +62,25 @@ def analyze_repository(
     """
     path = Path(path)
 
-    # Find git root if path is within a git repository
+    # Determine whether to use git root or provided path
     git_root = find_git_root(path)
-    root_path = git_root if git_root else path
+    is_git_root = git_root == path if git_root else False
+
+    # Use git root only if the provided path is the repo root
+    root_path = path
+    if is_git_root:
+        logger.info(f"Git repository root detected at {path}")
+        root_path = git_root
+    else:
+        logger.info(f"Processing directory at {path}")
 
     try:
         # Get gitignore patterns if respect_gitignore is enabled
         gitignore_patterns = set()
         if config["gitignore"]["respect"] and not force_cat:
-            gitignore_patterns = get_gitignore_patterns(root_path)
+            # Still get gitignore from git root if available for pattern matching
+            gitignore_root = git_root if git_root else root_path
+            gitignore_patterns = get_gitignore_patterns(gitignore_root)
 
         # Get size limit from config
         max_size_mb = config["output"]["size_limits"]["file_max_mb"]
@@ -81,8 +91,6 @@ def analyze_repository(
         files: List[FileInfo] = []
         total_size_mb = 0
         python_files_count = 0
-
-        logger.info(f"Analyzing repository at {root_path}")
 
         for file_path in walk_repository(root_path, gitignore_patterns, max_size_mb):
             try:

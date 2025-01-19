@@ -1,5 +1,6 @@
 """File handling utilities for smoosh."""
 
+import fnmatch
 import os
 from pathlib import Path
 from typing import Iterator, List, Optional, Set, Union
@@ -8,6 +9,45 @@ import chardet
 
 # Define PathLike here instead of importing from parent
 PathLike = Union[str, bytes, "os.PathLike[str]", "os.PathLike[bytes]"]
+
+# Default Python patterns that should always be ignored
+DEFAULT_PYTHON_IGNORE = {
+    # Python bytecode
+    "**/__pycache__/",
+    "**/*.py[cod]",
+    "**/*$py.class",
+    "**/*.so",
+    # Distribution/packaging
+    "**/build/",
+    "**/dist/",
+    "**/*.egg-info/",
+    "**/eggs/",
+    "**/.eggs/",
+    # Virtual environments
+    "**/.env/",
+    "**/.venv/",
+    "**/env/",
+    "**/venv/",
+    # Testing and coverage
+    "**/.pytest_cache/",
+    "**/.coverage",
+    "**/htmlcov/",
+    "**/.tox/",
+    # Type checking
+    "**/.mypy_cache/",
+    "**/.pytype/",
+    # IDE
+    "**/.idea/",
+    "**/.vscode/",
+    "**/*.swp",
+    # Version control
+    "**/.git/",
+    "**/.hg/",
+    "**/.svn/",
+    # Misc
+    "**/node_modules/",
+    "**/.DS_Store",
+}
 
 
 def is_text_file(path: PathLike) -> bool:
@@ -73,6 +113,32 @@ def find_git_root(start_path: PathLike) -> Optional[Path]:
     return None
 
 
+def _normalize_pattern(pattern: str) -> str:
+    """Normalize a gitignore pattern.
+
+    Args:
+        pattern: Raw pattern from gitignore
+
+    Returns:
+        Normalized pattern or empty string if invalid
+    """
+    pattern = pattern.strip()
+
+    # Skip empty lines and comments
+    if not pattern or pattern.startswith("#"):
+        return ""
+
+    # Skip negation patterns for now
+    if pattern.startswith("!"):
+        return ""
+
+    # Remove leading slashes
+    if pattern.startswith("/"):
+        pattern = pattern[1:]
+
+    return pattern
+
+
 def get_gitignore_patterns(repo_root: PathLike) -> Set[str]:
     """Get patterns from .gitignore file.
 
@@ -82,17 +148,55 @@ def get_gitignore_patterns(repo_root: PathLike) -> Set[str]:
     Returns:
         Set of gitignore patterns
     """
-    patterns = set()
+    patterns = set(DEFAULT_PYTHON_IGNORE)  # Start with default patterns
     gitignore_path = Path(repo_root) / ".gitignore"
 
     if gitignore_path.is_file():
         with open(gitignore_path, "r", encoding="utf-8") as f:
             for line in f:
-                line = line.strip()
-                if line and not line.startswith("#"):
-                    patterns.add(line)
+                pattern = _normalize_pattern(line)
+                if pattern:
+                    patterns.add(pattern)
 
     return patterns
+
+
+def should_ignore_path(path: Path, relative_to: Path, ignore_patterns: Set[str]) -> bool:
+    """Check if a path should be ignored based on gitignore patterns.
+
+    Args:
+        path: Path to check
+        relative_to: Repository root path to make path relative to
+        ignore_patterns: Set of patterns to check against
+
+    Returns:
+        True if path should be ignored
+    """
+    # Quick check for common ignored directories
+    if path.name in {"__pycache__", ".git", ".pytest_cache", "venv", ".env", "env"}:
+        return True
+
+    # Get path relative to repo root
+    try:
+        rel_path = str(path.relative_to(relative_to))
+    except ValueError:
+        return False
+
+    # Normalize path separators
+    rel_path = rel_path.replace(os.sep, "/")
+
+    # Check against patterns
+    for pattern in ignore_patterns:
+        if pattern.endswith("/"):
+            # Directory matching
+            if any(fnmatch.fnmatch(part, pattern[:-1]) for part in path.parts):
+                return True
+        else:
+            # File matching
+            if fnmatch.fnmatch(rel_path, pattern):
+                return True
+
+    return False
 
 
 def walk_repository(
@@ -112,12 +216,12 @@ def walk_repository(
     ignore_patterns = ignore_patterns or set()
 
     for path in root.rglob("*"):
-        # Skip directories
-        if path.is_dir():
+        # Skip ignored paths
+        if should_ignore_path(path, root, ignore_patterns):
             continue
 
-        # Skip files matching ignore patterns
-        if any(path.match(pattern) for pattern in ignore_patterns):
+        # Skip directories
+        if path.is_dir():
             continue
 
         # Skip files exceeding size limit

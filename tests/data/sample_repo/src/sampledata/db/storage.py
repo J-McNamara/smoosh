@@ -1,7 +1,8 @@
 """Database operations module."""
 import sqlite3
-from typing import List, Dict, Any
 from pathlib import Path
+from typing import Any, Dict, List
+
 
 class DBStorage:
     """Handle database operations."""
@@ -14,13 +15,15 @@ class DBStorage:
         """Store analysis results in database."""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS results
                 (id INTEGER PRIMARY KEY, timestamp TEXT, data TEXT)
-            """)
+            """
+            )
 
             for result in results:
                 cursor.execute(
                     "INSERT INTO results (timestamp, data) VALUES (?, ?)",
-                    (result['timestamp'], str(result['data']))
+                    (result["timestamp"], str(result["data"])),
                 )

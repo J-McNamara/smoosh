@@ -1,9 +1,11 @@
 """API client for external services."""
-import requests
-from typing import Dict, Optional
 import logging
+from typing import Dict, Optional
+
+import requests
 
 logger = logging.getLogger(__name__)
+
 
 class APIClient:
     """Client for external API interactions."""
@@ -15,14 +17,10 @@ class APIClient:
 
     def get_data(self, endpoint: str, params: Dict[str, str]) -> Dict:
         """Fetch data from API endpoint."""
-        headers = {'Authorization': f'Bearer {self.api_key}'} if self.api_key else {}
+        headers = {"Authorization": f"Bearer {self.api_key}"} if self.api_key else {}
 
         try:
-            response = requests.get(
-                f"{self.base_url}/{endpoint}",
-                params=params,
-                headers=headers
-            )
+            response = requests.get(f"{self.base_url}/{endpoint}", params=params, headers=headers)
             response.raise_for_status()
             return response.json()
         except Exception as e:

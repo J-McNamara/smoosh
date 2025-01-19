@@ -13,7 +13,7 @@ from rich.table import Table
 from . import AnalysisError, ConfigurationError, GenerationError, __version__
 from .analyzer.repository import analyze_repository
 from .composer.concatenator import concatenate_files
-from .utils.config import load_config
+from .utils import load_config, resolve_path  # Updated import
 
 console = Console()
 
@@ -31,38 +31,56 @@ def show_welcome():
 def show_stats(stats: dict):
     """Display analysis and generation statistics."""
     table = Table(title="Analysis Results", show_header=True)
-
     table.add_column("Metric", style="cyan")
     table.add_column("Value", style="magenta")
-
     for key, value in stats.items():
         table.add_row(key, str(value))
-
     console.print(table)
 
 
-@click.group()
-@click.version_option(version=__version__)
-def main():
-    """Smoosh Python packages into digestible summaries."""
-    show_welcome()
-
-
-@main.command()
-@click.argument("path", type=click.Path(exists=True))
+@click.command(context_settings={"ignore_unknown_options": True})
+@click.argument("path")
 @click.option(
     "--mode",
     type=click.Choice(["cat", "fold", "smoosh"]),
     default="cat",
-    help="Compression mode (cat: full concatenation, fold/smoosh: coming soon)",
+    help="Processing mode (default: cat)",
 )
 @click.option("--output", "-o", type=click.Path(), help="Output file path")
 @click.option("--force-cat", is_flag=True, help="Override gitignore and size limits")
-def process(path: str, mode: str, output: Optional[str], force_cat: bool):
-    """Process a Python package with the specified mode."""
-    path = Path(path)
-    output_path = Path(output) if output else None
+@click.version_option(version=__version__)
+def main(path: str, mode: str, output: Optional[str], force_cat: bool):
+    """Smoosh Python packages into digestible summaries.
 
+    PATH can be either a filesystem path or an installed package name.
+    """
+    show_welcome()
+
+    try:
+        # Resolve path or package name
+        target_path = resolve_path(path)
+        output_path = Path(output) if output else None
+
+        if not target_path.is_dir():
+            console.print(f"[bold red]Error:[/bold red] {path} is not a directory")
+            raise click.Abort()
+
+        console.print(f"Processing: [bold blue]{target_path}[/bold blue]")
+
+        # Load config and process
+        config = load_config(target_path)
+        process_directory(target_path, mode, output_path, force_cat)
+
+    except FileNotFoundError as e:
+        console.print(f"[bold red]Error:[/bold red] {str(e)}")
+        raise click.Abort()
+    except Exception as e:
+        console.print(f"[bold red]Error:[/bold red] An unexpected error occurred: {str(e)}")
+        raise click.Abort()
+
+
+def process_directory(path: Path, mode: str, output: Optional[Path], force_cat: bool):
+    """Process a directory with the specified mode."""
     try:
         # Load configuration
         config = load_config(path)
@@ -73,7 +91,7 @@ def process(path: str, mode: str, output: Optional[str], force_cat: bool):
             console=console,
         ) as progress:
             # Analyze repository
-            progress.add_task("Analyzing repository...", total=None)
+            progress.add_task("Analyzing...", total=None)
             repo_info = analyze_repository(path, config, force_cat)
 
             # Compose output
@@ -81,9 +99,9 @@ def process(path: str, mode: str, output: Optional[str], force_cat: bool):
             result, stats = concatenate_files(repo_info, mode, config)
 
             # Handle output
-            if output_path:
-                output_path.write_text(result)
-                console.print(f"✨ Output written to: [bold blue]{output_path}[/bold blue]")
+            if output:
+                output.write_text(result)
+                console.print(f"✨ Output written to: [bold blue]{output}[/bold blue]")
             else:
                 pyperclip.copy(result)
                 console.print("✨ Output copied to clipboard!")
@@ -97,19 +115,6 @@ def process(path: str, mode: str, output: Optional[str], force_cat: bool):
     except Exception as e:
         console.print("[bold red]An unexpected error occurred![/bold red]")
         console.print(f"[red]{str(e)}[/red]")
-        raise click.Abort()
-
-
-@main.command()
-@click.argument("path", type=click.Path(exists=True))
-def structure(path: str):
-    """Show package structure without processing."""
-    try:
-        config = load_config(Path(path))
-        repo_info = analyze_repository(Path(path), config, force_cat=False)
-        console.print(repo_info.get_tree_representation())
-    except Exception as e:
-        console.print(f"[bold red]Error:[/bold red] {str(e)}")
         raise click.Abort()
 
 
