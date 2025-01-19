@@ -9,26 +9,32 @@ description = "Software Module Outline & Organization Summary Helper"
 readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT"
-keywords = ["python", "static analysis", "code understanding", "llm", "documentation"]
+keywords = [
+  "python",
+  "static analysis",
+  "code understanding",
+  "llm",
+  "documentation",
+]
 authors = [
-    { name = "Josh McNamara", email = "J-McNamara@users.noreply.github.com" }
+  { name = "Josh McNamara", email = "J-McNamara@users.noreply.github.com" },
 ]
 classifiers = [
-    "Development Status :: 1 - Planning",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
+  "Development Status :: 1 - Planning",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
 ]
 dependencies = [
-    "click>=8.0.0",
-    "rich>=10.0.0",
-    "pyperclip>=1.8.0",
-    "chardet>=4.0.0",
-    "pyyaml>=6.0.0",  # Also adding this since I see it's used but missing
+  "click>=8.0.0",
+  "rich>=10.0.0",
+  "pyperclip>=1.8.0",
+  "chardet>=4.0.0",
+  "pyyaml>=6.0.0",    # Also adding this since I see it's used but missing
 ]
 
 [project.urls]
@@ -41,32 +47,29 @@ smoosh = "smoosh.cli:main"
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.0.0",
-    "pytest-cov>=4.1.0",
-    "black>=23.12.0",
-    "isort>=5.12.0",
-    "flake8>=6.1.0",
-    "flake8-docstrings>=1.7.0",
-    "mypy>=1.8.0",
-    "types-click",  # Only the type stubs we need
-    "pre-commit"
+  "pytest>=7.0.0",
+  "pytest-cov>=4.1.0",
+  "black>=23.12.0",
+  "isort>=5.12.0",
+  "flake8>=6.1.0",
+  "flake8-docstrings>=1.7.0",
+  "mypy>=1.8.0",
+  "types-click",              # Only the type stubs we need
+  "pre-commit",
 ]
 
 [tool.hatch.build]
-include = [
-  "src/smoosh/**/*.py",
-  "README.md",
-  "LICENSE",
-]
-exclude = [
-  "*.pyc",
-  "__pycache__",
-]
+include = ["src/smoosh/**/*.py", "README.md", "LICENSE"]
+exclude = ["*.pyc", "__pycache__"]
 
 [tool.black]
 line-length = 100
 target-version = ['py38']
 include = '\.pyi?$'
+exclude = '''
+/(
+    tests/data/   # Exclude the `tests` directory
+)'''
 
 [tool.isort]
 profile = "black"
@@ -76,6 +79,10 @@ include_trailing_comma = true
 force_grid_wrap = 0
 use_parentheses = true
 ensure_newline_before_comments = true
+skip_glob = [
+  "tests/data/**/*.py",
+] # Exclude all Python files in subdirectories of `tests`
+
 
 [tool.mypy]
 python_version = "3.8"
@@ -83,6 +90,10 @@ warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
 check_untyped_defs = true
+exclude = '''
+^tests/data/.*  # Exclude the `tests/data` directory and all its subdirectories
+'''
+
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -91,3 +102,4 @@ addopts = "-ra -q --cov=smoosh --cov-report=term-missing"
 
 [tool.flake8]
 max-line-length = 100
+exclude = ["tests/data/*"]
