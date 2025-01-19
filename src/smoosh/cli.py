@@ -1,5 +1,6 @@
 """Command line interface for smoosh."""
 
+from pathlib import Path
 from time import sleep
 
 import click
@@ -28,10 +29,11 @@ def main() -> None:
 
 
 @main.command()
-@click.argument("path", type=click.Path(exists=True))
+@click.argument("path", type=click.Path(exists=True, path_type=str))
 def analyze(path: str) -> None:
     """Analyze a Python package."""
-    console.print(f"🔍 Analyzing package at: [bold blue]{path}[/bold blue]")
+    package_path = Path(path)
+    console.print(f"🔍 Analyzing package at: [bold blue]{package_path}[/bold blue]")
 
     # Simulate analysis with progress bar
     for _ in track(range(5), description="Analyzing..."):
@@ -41,18 +43,20 @@ def analyze(path: str) -> None:
 
 
 @main.command()
-@click.argument("path", type=click.Path(exists=True))
+@click.argument("path", type=click.Path(exists=True, path_type=str))
 def summarize(path: str) -> None:
     """Generate LLM-friendly summary."""
-    console.print(f"📝 Summarizing package at: [bold blue]{path}[/bold blue]")
+    package_path = Path(path)
+    console.print(f"📝 Summarizing package at: [bold blue]{package_path}[/bold blue]")
     console.print("🚧 [yellow]Coming soon![/yellow]")
 
 
 @main.command()
-@click.argument("path", type=click.Path(exists=True))
+@click.argument("path", type=click.Path(exists=True, path_type=str))
 def structure(path: str) -> None:
     """Show package structure."""
-    console.print(f"📦 Analyzing structure of: [bold blue]{path}[/bold blue]")
+    package_path = Path(path)
+    console.print(f"📦 Analyzing structure of: [bold blue]{package_path}[/bold blue]")
     console.print("🚧 [yellow]Coming soon![/yellow]")
 
 
