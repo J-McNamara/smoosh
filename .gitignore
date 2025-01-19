@@ -37,6 +37,8 @@ ENV/
 .vscode/
 *.code-workspace
 .history/
+!.vscode/settings.json
+!.vscode/extensions.json
 
 # IDE - Spyder
 .spyderproject
