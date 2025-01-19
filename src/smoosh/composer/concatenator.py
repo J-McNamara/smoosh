@@ -15,9 +15,7 @@ class CompositionError(GenerationError):
     pass
 
 
-def concatenate_files(
-    repo_info: RepositoryInfo, mode: str, config: ConfigDict
-) -> Tuple[str, Dict]:
+def concatenate_files(repo_info: RepositoryInfo, mode: str, config: ConfigDict) -> Tuple[str, Dict]:
     """Compose repository files into a single coherent representation.
 
     Args:
@@ -115,9 +113,7 @@ def compose_cat_mode(repo_info: RepositoryInfo) -> str:
         if file_info.content is None:
             continue
 
-        sections.extend(
-            ["", f"### File: {file_info.relative_path} ###", file_info.content]
-        )
+        sections.extend(["", f"### File: {file_info.relative_path} ###", file_info.content])
 
     return "\n".join(sections)
 
@@ -162,9 +158,7 @@ def gather_statistics(repo_info: RepositoryInfo, content: str) -> Dict:
     original_lines = sum(
         len(f.content.splitlines()) for f in repo_info.files if f.content is not None
     )
-    original_chars = sum(
-        len(f.content) for f in repo_info.files if f.content is not None
-    )
+    original_chars = sum(len(f.content) for f in repo_info.files if f.content is not None)
 
     # Calculate composition sizes
     composed_lines = len(content.splitlines())
@@ -178,10 +172,6 @@ def gather_statistics(repo_info: RepositoryInfo, content: str) -> Dict:
         "Composed Lines": composed_lines,
         "Original Characters": original_chars,
         "Composed Characters": composed_chars,
-        "Lines Ratio": (
-            f"{composed_lines/original_lines:.2f}x" if original_lines else "N/A"
-        ),
-        "Characters Ratio": (
-            f"{composed_chars/original_chars:.2f}x" if original_chars else "N/A"
-        ),
+        "Lines Ratio": (f"{composed_lines/original_lines:.2f}x" if original_lines else "N/A"),
+        "Characters Ratio": (f"{composed_chars/original_chars:.2f}x" if original_chars else "N/A"),
     }

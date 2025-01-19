@@ -26,6 +26,9 @@ classifiers = [
 dependencies = [
     "click>=8.0.0",
     "rich>=10.0.0",
+    "pyperclip>=1.8.0",
+    "chardet>=4.0.0",
+    "pyyaml>=6.0.0",  # Also adding this since I see it's used but missing
 ]
 
 [project.urls]

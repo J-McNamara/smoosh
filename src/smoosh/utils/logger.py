@@ -29,9 +29,7 @@ def setup_logger(
 
     # Create formatters
     console_formatter = logging.Formatter("%(levelname)s: %(message)s")
-    file_formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
+    file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
     # Console handler
     console_handler = logging.StreamHandler(sys.stderr)

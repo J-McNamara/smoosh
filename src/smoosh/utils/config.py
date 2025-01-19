@@ -74,21 +74,13 @@ def validate_config(config: ConfigDict) -> None:
         not isinstance(size_limits.get("file_max_mb"), (int, float))
         or size_limits["file_max_mb"] <= 0
     ):
-        raise ConfigurationError(
-            "output.size_limits.file_max_mb must be a positive number"
-        )
+        raise ConfigurationError("output.size_limits.file_max_mb must be a positive number")
 
     # Validate thresholds
     thresholds = config["thresholds"]
-    if (
-        not isinstance(thresholds.get("cat_threshold"), int)
-        or thresholds["cat_threshold"] <= 0
-    ):
+    if not isinstance(thresholds.get("cat_threshold"), int) or thresholds["cat_threshold"] <= 0:
         raise ConfigurationError("thresholds.cat_threshold must be a positive integer")
-    if (
-        not isinstance(thresholds.get("fold_threshold"), int)
-        or thresholds["fold_threshold"] <= 0
-    ):
+    if not isinstance(thresholds.get("fold_threshold"), int) or thresholds["fold_threshold"] <= 0:
         raise ConfigurationError("thresholds.fold_threshold must be a positive integer")
     if thresholds["cat_threshold"] >= thresholds["fold_threshold"]:
         raise ConfigurationError("cat_threshold must be less than fold_threshold")

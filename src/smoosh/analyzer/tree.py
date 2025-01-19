@@ -71,9 +71,7 @@ def format_tree(
         Formatted string representation of the tree
     """
     # Sort children: directories first, then files, both alphabetically
-    sorted_children = sorted(
-        node.children.items(), key=lambda x: (not x[1].is_dir, x[0].lower())
-    )
+    sorted_children = sorted(node.children.items(), key=lambda x: (not x[1].is_dir, x[0].lower()))
 
     # Prepare the current line
     if node.is_dir:
@@ -93,9 +91,7 @@ def format_tree(
     children_count = len(sorted_children)
     for i, (child_name, child_node) in enumerate(sorted_children):
         child_prefix = prefix + ("    " if is_last else "│   ")
-        line += format_tree(
-            child_node, child_prefix, i == children_count - 1, include_indicators
-        )
+        line += format_tree(child_node, child_prefix, i == children_count - 1, include_indicators)
 
     return line
 

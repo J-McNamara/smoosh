@@ -2,11 +2,12 @@
 
 import os
 from pathlib import Path
-from typing import Iterator, List, Set
+from typing import Iterator, List, Optional, Set, Union
 
 import chardet
 
-from .. import PathLike
+# Define PathLike here instead of importing from parent
+PathLike = Union[str, bytes, "os.PathLike[str]", "os.PathLike[bytes]"]
 
 
 def is_text_file(path: PathLike) -> bool:
@@ -95,7 +96,7 @@ def get_gitignore_patterns(repo_root: PathLike) -> Set[str]:
 
 
 def walk_repository(
-    root: PathLike, ignore_patterns: Set[str] = None, max_size_mb: float = None
+    root: PathLike, ignore_patterns: Optional[Set[str]] = None, max_size_mb: Optional[float] = None
 ) -> Iterator[Path]:
     """Walk through repository yielding relevant files.
 

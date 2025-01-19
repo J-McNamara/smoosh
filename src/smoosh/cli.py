@@ -83,9 +83,7 @@ def process(path: str, mode: str, output: Optional[str], force_cat: bool):
             # Handle output
             if output_path:
                 output_path.write_text(result)
-                console.print(
-                    f"✨ Output written to: [bold blue]{output_path}[/bold blue]"
-                )
+                console.print(f"✨ Output written to: [bold blue]{output_path}[/bold blue]")
             else:
                 pyperclip.copy(result)
                 console.print("✨ Output copied to clipboard!")

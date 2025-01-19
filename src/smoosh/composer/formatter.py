@@ -16,9 +16,7 @@ class FormattingError(GenerationError):
     pass
 
 
-def format_composition(
-    content: str, stats: Dict[str, Any], format_type: str = "text"
-) -> str:
+def format_output(content: str, stats: Dict[str, Any], format_type: str = "text") -> str:
     """Format the composed content in the specified style.
 
     Args:
