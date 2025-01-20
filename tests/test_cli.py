@@ -49,5 +49,10 @@ def test_main_shows_help(runner: CliRunner) -> None:
 
     """
     result = runner.invoke(main, ["--help"])
-    assert result.exit_code == 0
-    assert "Smoosh Python packages into digestible summaries" in result.output
+    expected_text = "Smoosh Python packages into digestible summaries"
+
+    # Using standard pytest assertions with descriptive messages
+    if result.exit_code != 0:
+        pytest.fail("CLI should exit successfully")
+    if expected_text not in result.output:
+        pytest.fail("Help text should contain package description")
