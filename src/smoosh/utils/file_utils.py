@@ -3,12 +3,12 @@
 import fnmatch
 import os
 from pathlib import Path
-from typing import Iterator, List, Optional, Set, Union
+from typing import Iterator, Optional, Set, Union
 
 import chardet
 
-# Define PathLike here instead of importing from parent
-PathLike = Union[str, bytes, "os.PathLike[str]", "os.PathLike[bytes]"]
+# Define a more specific PathLike type that only includes str paths
+PathLike = Union[str, "os.PathLike[str]"]
 
 # Default Python patterns that should always be ignored
 DEFAULT_PYTHON_IGNORE = {
@@ -55,13 +55,16 @@ def is_text_file(path: PathLike) -> bool:
     """Check if a file is a text file by analyzing its content.
 
     Args:
+    ----
         path: Path to the file
 
     Returns:
+    -------
         True if the file appears to be text, False otherwise
+
     """
     try:
-        with open(path, "rb") as f:
+        with open(str(path), "rb") as f:
             # Read first 1024 bytes for detection
             sample = f.read(1024)
             if not sample:  # Empty file
@@ -83,24 +86,31 @@ def get_file_size_mb(path: PathLike) -> float:
     """Get file size in megabytes.
 
     Args:
+    ----
         path: Path to the file
 
     Returns:
+    -------
         File size in MB
+
     """
-    return os.path.getsize(path) / (1024 * 1024)
+    return os.path.getsize(str(path)) / (1024 * 1024)
 
 
 def find_git_root(start_path: PathLike) -> Optional[Path]:
     """Find the root of the git repository containing start_path.
 
     Args:
+    ----
         start_path: Path to start searching from
 
     Returns:
+    -------
         Path to git root if found, None otherwise
+
     """
-    start_path = Path(start_path).resolve()
+    # Convert to Path, ensuring str type
+    start_path = Path(str(start_path)).resolve()
 
     # Handle if start_path is a file
     if start_path.is_file():
@@ -118,10 +128,13 @@ def _normalize_pattern(pattern: str) -> str:
     """Normalize a gitignore pattern.
 
     Args:
+    ----
         pattern: Raw pattern from gitignore
 
     Returns:
+    -------
         Normalized pattern or empty string if invalid
+
     """
     pattern = pattern.strip()
 
@@ -144,16 +157,19 @@ def get_gitignore_patterns(repo_root: PathLike) -> Set[str]:
     """Get patterns from .gitignore file.
 
     Args:
+    ----
         repo_root: Repository root path
 
     Returns:
+    -------
         Set of gitignore patterns
+
     """
     patterns = set(DEFAULT_PYTHON_IGNORE)  # Start with default patterns
-    gitignore_path = Path(repo_root) / ".gitignore"
+    gitignore_path = Path(str(repo_root)) / ".gitignore"
 
     if gitignore_path.is_file():
-        with open(gitignore_path, "r", encoding="utf-8") as f:
+        with open(gitignore_path, encoding="utf-8") as f:
             for line in f:
                 pattern = _normalize_pattern(line)
                 if pattern:
@@ -166,12 +182,15 @@ def should_ignore_path(path: Path, relative_to: Path, ignore_patterns: Set[str])
     """Check if a path should be ignored based on gitignore patterns.
 
     Args:
+    ----
         path: Path to check
         relative_to: Repository root path to make path relative to
         ignore_patterns: Set of patterns to check against
 
     Returns:
+    -------
         True if path should be ignored
+
     """
     # Quick check for common ignored directories
     if path.name in {"__pycache__", ".git", ".pytest_cache", "venv", ".env", "env"}:
@@ -206,14 +225,17 @@ def walk_repository(
     """Walk through repository yielding relevant files.
 
     Args:
+    ----
         root: Repository root path
         ignore_patterns: Set of patterns to ignore
         max_size_mb: Maximum file size in MB
 
     Yields:
+    ------
         Path objects for each relevant file
+
     """
-    root = Path(root)
+    root = Path(str(root))
     ignore_patterns = ignore_patterns or set()
 
     for path in root.rglob("*"):

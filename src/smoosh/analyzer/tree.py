@@ -1,11 +1,14 @@
 """Directory tree generation functionality for smoosh."""
 
-from collections import defaultdict
+import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Union
 
-from .. import PathLike
+from ..types import FileInfo
+
+# Define PathLike type consistently with file_utils
+PathLike = Union[str, "os.PathLike[str]"]
 
 
 @dataclass
@@ -24,17 +27,23 @@ class TreeNode:
         self.is_python = name.endswith(".py")
 
 
-def build_tree(root: PathLike, files: List["FileInfo"]) -> TreeNode:
+def build_tree(root: PathLike, files: List[FileInfo]) -> TreeNode:
     """Build a tree structure from list of files.
 
     Args:
+    ----
         root: Repository root path
         files: List of FileInfo objects
 
     Returns:
+    -------
         TreeNode representing the root of the tree
+
     """
-    root_node = TreeNode(Path(root).name or str(root))
+    # Convert root path to string safely
+    root_path = Path(str(root))
+    root_name = root_path.name or str(root_path)
+    root_node = TreeNode(root_name)
 
     for file_info in files:
         current = root_node
@@ -62,13 +71,16 @@ def format_tree(
     """Format a tree node as a string.
 
     Args:
+    ----
         node: Tree node to format
         prefix: Prefix for current line
         is_last: Whether this is the last child of its parent
         include_indicators: Whether to include file type indicators
 
     Returns:
+    -------
         Formatted string representation of the tree
+
     """
     # Sort children: directories first, then files, both alphabetically
     sorted_children = sorted(node.children.items(), key=lambda x: (not x[1].is_dir, x[0].lower()))
@@ -94,15 +106,18 @@ def format_tree(
     return line
 
 
-def generate_tree(root: PathLike, files: List["FileInfo"]) -> str:
+def generate_tree(root: PathLike, files: List[FileInfo]) -> str:
     """Compose a tree representation of the repository structure.
 
     Args:
+    ----
         root: Repository root path
         files: List of FileInfo objects
 
     Returns:
+    -------
         String representation of the directory tree
+
     """
     tree = build_tree(root, files)
     return format_tree(tree)

@@ -1,7 +1,6 @@
 """Repository content composition functionality for smoosh."""
 
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Tuple, Union
 
 from .. import GenerationError
 from ..analyzer.repository import RepositoryInfo, load_file_contents
@@ -15,19 +14,25 @@ class CompositionError(GenerationError):
     pass
 
 
-def concatenate_files(repo_info: RepositoryInfo, mode: str, config: ConfigDict) -> Tuple[str, Dict]:
+def concatenate_files(
+    repo_info: RepositoryInfo, mode: str, config: ConfigDict
+) -> Tuple[str, Dict[str, Union[str, int]]]:
     """Compose repository files into a single coherent representation.
 
     Args:
+    ----
         repo_info: Repository information
         mode: Composition mode ('cat', 'fold', or 'smoosh')
         config: Configuration dictionary
 
     Returns:
+    -------
         Tuple of (composed content, statistics dictionary)
 
     Raises:
+    ------
         CompositionError: If composition fails
+
     """
     try:
         # Load file contents if not already loaded
@@ -59,11 +64,14 @@ def compose_header(repo_info: RepositoryInfo, mode: str) -> str:
     """Compose the header section.
 
     Args:
+    ----
         repo_info: Repository information
         mode: Composition mode
 
     Returns:
+    -------
         Composed header string
+
     """
     header = [
         f"Repository: {repo_info.root.name}",
@@ -82,11 +90,14 @@ def compose_content(repo_info: RepositoryInfo, mode: str) -> str:
     """Compose the main content based on the specified mode.
 
     Args:
+    ----
         repo_info: Repository information
         mode: Composition mode
 
     Returns:
+    -------
         Composed content string
+
     """
     if mode == "cat":
         return compose_cat_mode(repo_info)
@@ -102,10 +113,13 @@ def compose_cat_mode(repo_info: RepositoryInfo) -> str:
     """Compose content in full concatenation mode.
 
     Args:
+    ----
         repo_info: Repository information
 
     Returns:
+    -------
         Concatenated content
+
     """
     sections = []
 
@@ -122,10 +136,13 @@ def compose_fold_mode(repo_info: RepositoryInfo) -> str:
     """Compose content in structure-preserving mode (placeholder).
 
     Args:
+    ----
         repo_info: Repository information
 
     Returns:
+    -------
         Structure-preserved content
+
     """
     # TODO: Implement fold mode composition
     return compose_cat_mode(repo_info)
@@ -135,24 +152,30 @@ def compose_smoosh_mode(repo_info: RepositoryInfo) -> str:
     """Compose content in maximum compression mode (placeholder).
 
     Args:
+    ----
         repo_info: Repository information
 
     Returns:
+    -------
         Compressed content
+
     """
     # TODO: Implement smoosh mode composition
     return compose_cat_mode(repo_info)
 
 
-def gather_statistics(repo_info: RepositoryInfo, content: str) -> Dict:
+def gather_statistics(repo_info: RepositoryInfo, content: str) -> Dict[str, Union[str, int]]:
     """Gather statistics about the composed content.
 
     Args:
+    ----
         repo_info: Repository information
         content: Composed content
 
     Returns:
+    -------
         Dictionary of statistics
+
     """
     # Calculate original sizes
     original_lines = sum(

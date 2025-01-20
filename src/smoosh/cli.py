@@ -1,7 +1,7 @@
 """Command line interface for smoosh."""
 
 from pathlib import Path
-from typing import Optional
+from typing import Any, Dict, Optional
 
 import click
 import pyperclip
@@ -13,12 +13,12 @@ from rich.table import Table
 from . import AnalysisError, ConfigurationError, GenerationError, __version__
 from .analyzer.repository import analyze_repository
 from .composer.concatenator import concatenate_files
-from .utils import load_config, resolve_path  # Updated import
+from .utils import load_config, resolve_path
 
 console = Console()
 
 
-def show_welcome():
+def show_welcome() -> None:
     """Show welcome message with version."""
     console.print(
         Panel.fit(
@@ -28,7 +28,7 @@ def show_welcome():
     )
 
 
-def show_stats(stats: dict):
+def show_stats(stats: Dict[str, Any]) -> None:
     """Display analysis and generation statistics."""
     table = Table(title="Analysis Results", show_header=True)
     table.add_column("Metric", style="cyan")
@@ -49,7 +49,7 @@ def show_stats(stats: dict):
 @click.option("--output", "-o", type=click.Path(), help="Output file path")
 @click.option("--force-cat", is_flag=True, help="Override gitignore and size limits")
 @click.version_option(version=__version__)
-def main(path: str, mode: str, output: Optional[str], force_cat: bool):
+def main(path: str, mode: str, output: Optional[str], force_cat: bool) -> None:
     """Smoosh Python packages into digestible summaries.
 
     PATH can be either a filesystem path or an installed package name.
@@ -79,7 +79,7 @@ def main(path: str, mode: str, output: Optional[str], force_cat: bool):
         raise click.Abort()
 
 
-def process_directory(path: Path, mode: str, output: Optional[Path], force_cat: bool):
+def process_directory(path: Path, mode: str, output: Optional[Path], force_cat: bool) -> None:
     """Process a directory with the specified mode."""
     try:
         # Load configuration

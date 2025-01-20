@@ -1,13 +1,11 @@
 """Format composition outputs in various styles."""
 
 import json
-from pathlib import Path
 from typing import Any, Dict
 
 import yaml
 
 from .. import GenerationError
-from ..utils.logger import logger
 
 
 class FormattingError(GenerationError):
@@ -20,15 +18,19 @@ def format_output(content: str, stats: Dict[str, Any], format_type: str = "text"
     """Format the composed content in the specified style.
 
     Args:
+    ----
         content: Composed content
         stats: Composition statistics
         format_type: Output format style ('text', 'json', 'yaml', 'markdown')
 
     Returns:
+    -------
         Formatted composition
 
     Raises:
+    ------
         FormattingError: If formatting fails
+
     """
     try:
         formatters = {
@@ -50,11 +52,14 @@ def format_text(content: str, stats: Dict[str, Any]) -> str:
     """Format composition as plain text.
 
     Args:
+    ----
         content: Composed content
         stats: Composition statistics
 
     Returns:
+    -------
         Formatted text
+
     """
     stats_section = "Composition Statistics:\n" + "\n".join(
         f"{key}: {value}" for key, value in stats.items()
@@ -67,11 +72,14 @@ def format_json(content: str, stats: Dict[str, Any]) -> str:
     """Format composition as JSON.
 
     Args:
+    ----
         content: Composed content
         stats: Composition statistics
 
     Returns:
+    -------
         JSON string
+
     """
     data = {"statistics": stats, "composition": content}
     return json.dumps(data, indent=2)
@@ -81,11 +89,14 @@ def format_yaml(content: str, stats: Dict[str, Any]) -> str:
     """Format composition as YAML.
 
     Args:
+    ----
         content: Composed content
         stats: Composition statistics
 
     Returns:
+    -------
         YAML string
+
     """
     data = {"statistics": stats, "composition": content}
     return yaml.dump(data, sort_keys=False)
@@ -95,11 +106,14 @@ def format_markdown(content: str, stats: Dict[str, Any]) -> str:
     """Format composition as Markdown.
 
     Args:
+    ----
         content: Composed content
         stats: Composition statistics
 
     Returns:
+    -------
         Markdown string
+
     """
     # Create statistics table
     stats_table = [

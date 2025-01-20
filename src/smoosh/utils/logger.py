@@ -12,12 +12,15 @@ def setup_logger(
     """Configure and return a logger instance.
 
     Args:
+    ----
         name: Logger name
         level: Logging level
         log_file: Optional path to log file
 
     Returns:
+    -------
         Configured logger instance
+
     """
     # Create logger
     logger = logging.getLogger(name)

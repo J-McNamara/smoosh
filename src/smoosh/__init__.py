@@ -1,21 +1,19 @@
-"""
-smoosh - Software Module Outline & Organization Summary Helper
-"""
+"""smoosh - Software Module Outline & Organization Summary Helper"""
 
+import os
 from importlib.metadata import PackageNotFoundError, version
+from typing import Any, Dict, Union
 
 try:
     __version__ = version("smoosh")
 except PackageNotFoundError:
-    __version__ = "0.1.0.dev0"  # Default during development
+    __version__ = "0.1.0"  # Default during development
 
-__author__ = "Project Contributors"
+__author__ = "Joshua T. McNamara"
 __license__ = "MIT"
 
-from typing import Any, Dict, List, Optional, Union
-
 # Type aliases for clarity
-PathLike = Union[str, bytes, "os.PathLike[str]", "os.PathLike[bytes]"]
+PathLike = Union[str, bytes, os.PathLike[str], os.PathLike[bytes]]
 ConfigDict = Dict[str, Any]
 
 

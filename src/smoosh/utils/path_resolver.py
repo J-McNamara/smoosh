@@ -13,10 +13,13 @@ def find_package_path(package_name: str) -> Optional[Path]:
     """Find the installation path of a Python package.
 
     Args:
+    ----
         package_name: Name of the package to find
 
     Returns:
+    -------
         Path to the package directory if found, None otherwise
+
     """
     # Try direct spec lookup first
     spec = util.find_spec(package_name)
@@ -43,13 +46,17 @@ def resolve_path(path_or_name: str) -> Path:
     """Resolve a path or package name to a filesystem path.
 
     Args:
+    ----
         path_or_name: Either a filesystem path or package name
 
     Returns:
+    -------
         Resolved filesystem path
 
     Raises:
+    ------
         FileNotFoundError: If path doesn't exist and package cannot be found
+
     """
     # First try as direct path
     direct_path = Path(path_or_name)

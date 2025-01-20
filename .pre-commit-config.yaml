@@ -1,28 +1,13 @@
 repos:
-  - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.3.0
     hooks:
-      - id: isort
-        name: isort (python)
-        args: ["--profile", "black", "--filter-files"]
-
-  - repo: https://github.com/psf/black
-    rev: 23.12.1
-    hooks:
-      - id: black
-        language_version: python3
-
-  - repo: https://github.com/pycqa/flake8
-    rev: 6.1.0
-    hooks:
-      - id: flake8
-        additional_dependencies:
-          - flake8-docstrings
-          - flake8-bugbear
-        args: ["--max-line-length=88"] # Match black's line length
+      - id: ruff
+        args: ["--fix"]
+      - id: ruff-format
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -32,6 +17,10 @@ repos:
       - id: check-added-large-files
       - id: debug-statements
       - id: check-ast
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: mixed-line-ending
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.8.0
@@ -39,11 +28,14 @@ repos:
       - id: mypy
         additional_dependencies:
           - types-click
+          - types-PyYAML
         args:
           [
             "--ignore-missing-imports",
             "--disallow-untyped-defs",
             "--check-untyped-defs",
+            "--show-error-codes",
+            "--pretty",
           ]
 
   - repo: local
@@ -54,5 +46,24 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
-        stages: [commit]
+        stages: [pre-commit]
         args: ["--cov=smoosh", "--cov-report=term-missing", "tests/"]
+      # Add a local safety hook that works with any build system
+      - id: safety-check
+        name: safety-check
+        entry: safety check
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+
+  - repo: https://github.com/jorisroovers/gitlint
+    rev: v0.19.1
+    hooks:
+      - id: gitlint
+        args: ["--msg-filename"]
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck

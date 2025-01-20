@@ -4,23 +4,15 @@ build-backend = "hatchling.build"
 
 [project]
 name = "smoosh"
-version = "0.0.1"
+version = "0.1.0"
 description = "Software Module Outline & Organization Summary Helper"
 readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT"
-keywords = [
-  "python",
-  "static analysis",
-  "code understanding",
-  "llm",
-  "documentation",
-]
-authors = [
-  { name = "Josh McNamara", email = "J-McNamara@users.noreply.github.com" },
-]
+authors = [{ name = "Project Contributors" }]
+keywords = ["python", "analysis", "ast", "summary", "llm"]
 classifiers = [
-  "Development Status :: 1 - Planning",
+  "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
   "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
@@ -28,48 +20,49 @@ classifiers = [
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
+  "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-dependencies = [
-  "click>=8.0.0",
-  "rich>=10.0.0",
-  "pyperclip>=1.8.0",
-  "chardet>=4.0.0",
-  "pyyaml>=6.0.0",    # Also adding this since I see it's used but missing
-]
+dependencies = ["click>=8.0", "rich>=10.0", "pyperclip>=1.8", "PyYAML>=6.0"]
 
-[project.urls]
-Homepage = "https://github.com/j-mcnamara/smoosh"
-Repository = "https://github.com/j-mcnamara/smoosh"
-Documentation = "https://github.com/j-mcnamara/smoosh#readme"
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.0",
+  "pytest-cov>=4.0",
+  "black>=22.0",
+  "isort>=5.0",
+  "mypy>=1.0",
+  "ruff>=0.0.1",
+]
 
 [project.scripts]
 smoosh = "smoosh.cli:main"
 
-[project.optional-dependencies]
-dev = [
-  "pytest>=7.0.0",
-  "pytest-cov>=4.1.0",
-  "black>=23.12.0",
-  "isort>=5.12.0",
-  "flake8>=6.1.0",
-  "flake8-docstrings>=1.7.0",
-  "mypy>=1.8.0",
-  "types-click",              # Only the type stubs we need
-  "pre-commit",
-]
-
-[tool.hatch.build]
-include = ["src/smoosh/**/*.py", "README.md", "LICENSE"]
-exclude = ["*.pyc", "__pycache__"]
+[project.urls]
+Homepage = "https://github.com/yourusername/smoosh"
+Documentation = "https://github.com/yourusername/smoosh#readme"
+"Bug Tracker" = "https://github.com/yourusername/smoosh/issues"
 
 [tool.black]
 line-length = 100
 target-version = ['py38']
 include = '\.pyi?$'
-exclude = '''
+extend-exclude = '''
 /(
-    tests/data/   # Exclude the `tests` directory
-)'''
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | venv
+  | env
+  | _build
+  | buck-out
+  | build
+  | dist
+  | tests/data
+  | node_modules
+)/
+'''
 
 [tool.isort]
 profile = "black"
@@ -80,9 +73,16 @@ force_grid_wrap = 0
 use_parentheses = true
 ensure_newline_before_comments = true
 skip_glob = [
-  "tests/data/**/*.py",
-] # Exclude all Python files in subdirectories of `tests`
-
+  "tests/data/*",
+  ".venv/*",
+  "venv/*",
+  "env/*",
+  ".tox/*",
+  "build/*",
+  "dist/*",
+  "*.pyi",
+  "node_modules/*",
+]
 
 [tool.mypy]
 python_version = "3.8"
@@ -90,16 +90,90 @@ warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
 check_untyped_defs = true
-exclude = '''
-^tests/data/.*  # Exclude the `tests/data` directory and all its subdirectories
-'''
+disallow_any_generics = true
+disallow_incomplete_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+show_error_codes = true
+pretty = true
+exclude = '''(?x)(
+    tests/data/.*
+    | build/.*
+    | dist/.*
+    | \.venv/.*
+    | venv/.*
+    | env/.*
+    | \.tox/.*
+    | node_modules/.*
+)'''
 
+[tool.ruff]
+line-length = 100
+target-version = "py38"
+exclude = [
+  ".git",
+  ".mypy_cache",
+  ".ruff_cache",
+  ".tox",
+  ".venv",
+  "venv",
+  "env",
+  "__pycache__",
+  "build",
+  "dist",
+  "tests/data",
+  "node_modules",
+  "_build",
+  "buck-out",
+  "*.pyi",
+]
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = "test_*.py"
-addopts = "-ra -q --cov=smoosh --cov-report=term-missing"
+[tool.ruff.lint]
+select = [
+  "E",   # pycodestyle errors
+  "W",   # pycodestyle warnings
+  "F",   # pyflakes
+  "B",   # flake8-bugbear
+  "D",   # pydocstyle
+  "I",   # isort
+  "N",   # pep8-naming
+  "UP",  # pyupgrade
+  "ERA", # eradicate
+]
+ignore = [
+  "D100", # Missing docstring in public module
+  "D104", # Missing docstring in public package
+  "D211", # No blank lines before class (to resolve conflict with D203)
+  "D213", # Multi-line docstring summary should start at second line (to resolve conflict with D212)
+]
 
-[tool.flake8]
-max-line-length = 100
-exclude = ["tests/data/*"]
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.coverage.run]
+branch = true
+source = ["src/smoosh"]
+omit = [
+  "tests/*",
+  "tests/data/*",
+  ".venv/*",
+  "venv/*",
+  "env/*",
+  ".tox/*",
+  "setup.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+  "pragma: no cover",
+  "def __repr__",
+  "if self.debug:",
+  "raise NotImplementedError",
+  "if __name__ == .__main__.:",
+  "pass",
+  "raise ImportError",
+]

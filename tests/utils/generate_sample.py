@@ -9,10 +9,7 @@ This script creates a sample data science package with common patterns like:
 - Database operations
 """
 
-import os
-import shutil
 from pathlib import Path
-from typing import Dict, List, Optional
 
 SAMPLE_FILES = {
     "src/sampledata/__init__.py": '''"""Sample data science package."""
@@ -196,7 +193,9 @@ def generate_sample_repo(base_path: Path) -> None:
     """Generate a sample repository structure.
 
     Args:
+    ----
         base_path: Directory where the sample repo should be created
+
     """
     # Create directory structure
     for file_path, content in SAMPLE_FILES.items():
