@@ -1,10 +1,7 @@
 """Configuration handling for smoosh."""
 
 import os
-from pathlib import Path
 from typing import Any, Dict, TypedDict, Union, cast
-
-import yaml
 
 # Define PathLike type consistently with other modules
 PathLike = Union[str, "os.PathLike[str]"]
@@ -51,83 +48,39 @@ DEFAULT_CONFIG: ConfigDict = {
 }
 
 
-def load_config(repo_path: PathLike) -> ConfigDict:
-    """Load configuration from repo_path/smoosh.yaml or use defaults.
-
-    Args:
-    ----
-        repo_path: Path to the repository root.
-
-    Returns:
-    -------
-        Dict containing merged configuration (defaults + user config).
-
-    Raises:
-    ------
-        ConfigurationError: If config file exists but is invalid.
-
-    """
-    repo_path = Path(str(repo_path))
-    config_path = repo_path / "smoosh.yaml"
-
-    # Start with default configuration
-    config = cast(ConfigDict, DEFAULT_CONFIG.copy())
-
-    # If config file exists, load and merge it
-    if config_path.exists():
-        try:
-            with config_path.open("r", encoding="utf-8") as f:
-                user_config = yaml.safe_load(f)
-                if user_config:
-                    config = deep_merge(config, user_config)
-        except yaml.YAMLError as e:
-            raise ConfigurationError(f"Invalid YAML in config file: {e}") from e
-        except Exception as e:
-            raise ConfigurationError(f"Error reading config file: {e}") from e
-
-    # Validate the final configuration
-    validate_config(config)
-    return config
+def _merge_output(base_output: OutputDict, update_output: Dict[str, Any]) -> OutputDict:
+    """Merge output section of configuration."""
+    output_dict = base_output.copy()
+    if "max_tokens" in update_output:
+        output_dict["max_tokens"] = update_output["max_tokens"]
+    if "size_limits" in update_output and isinstance(update_output["size_limits"], dict):
+        size_limits = output_dict["size_limits"].copy()
+        if "file_max_mb" in update_output["size_limits"]:
+            size_limits["file_max_mb"] = update_output["size_limits"]["file_max_mb"]
+        output_dict["size_limits"] = size_limits
+    return output_dict
 
 
-def validate_config(config: ConfigDict) -> None:
-    """Validate configuration values.
+def _merge_thresholds(
+    base_thresholds: ThresholdsDict, update_thresholds: Dict[str, Any]
+) -> ThresholdsDict:
+    """Merge thresholds section of configuration."""
+    thresholds_dict = base_thresholds.copy()
+    if "cat_threshold" in update_thresholds:
+        thresholds_dict["cat_threshold"] = update_thresholds["cat_threshold"]
+    if "fold_threshold" in update_thresholds:
+        thresholds_dict["fold_threshold"] = update_thresholds["fold_threshold"]
+    return thresholds_dict
 
-    Args:
-    ----
-        config: Configuration dictionary to validate.
 
-    Raises:
-    ------
-        ConfigurationError: If configuration is invalid.
-
-    """
-    # Check required sections
-    required_sections = ["output", "thresholds", "gitignore"]
-    for section in required_sections:
-        if section not in config:
-            raise ConfigurationError(f"Missing required config section: {section}")
-
-    # Validate output section
-    output = config["output"]
-    if not isinstance(output.get("max_tokens"), int) or output["max_tokens"] <= 0:
-        raise ConfigurationError("output.max_tokens must be a positive integer")
-
-    size_limits = output.get("size_limits", {})
-    if (
-        not isinstance(size_limits.get("file_max_mb"), (int, float))
-        or size_limits["file_max_mb"] <= 0
-    ):
-        raise ConfigurationError("output.size_limits.file_max_mb must be a positive number")
-
-    # Validate thresholds
-    thresholds = config["thresholds"]
-    if not isinstance(thresholds.get("cat_threshold"), int) or thresholds["cat_threshold"] <= 0:
-        raise ConfigurationError("thresholds.cat_threshold must be a positive integer")
-    if not isinstance(thresholds.get("fold_threshold"), int) or thresholds["fold_threshold"] <= 0:
-        raise ConfigurationError("thresholds.fold_threshold must be a positive integer")
-    if thresholds["cat_threshold"] >= thresholds["fold_threshold"]:
-        raise ConfigurationError("cat_threshold must be less than fold_threshold")
+def _merge_gitignore(
+    base_gitignore: GitignoreDict, update_gitignore: Dict[str, Any]
+) -> GitignoreDict:
+    """Merge gitignore section of configuration."""
+    gitignore_dict = base_gitignore.copy()
+    if "respect" in update_gitignore:
+        gitignore_dict["respect"] = update_gitignore["respect"]
+    return gitignore_dict
 
 
 def deep_merge(base: ConfigDict, update: Dict[str, Any]) -> ConfigDict:
@@ -147,36 +100,17 @@ def deep_merge(base: ConfigDict, update: Dict[str, Any]) -> ConfigDict:
     valid_keys = {"output", "thresholds", "gitignore"}
 
     for key, value in update.items():
-        if key not in valid_keys:
+        if key not in valid_keys or not isinstance(value, dict):
             continue
 
-        if key == "output" and isinstance(value, dict):
-            if isinstance(merged["output"], dict):
-                output_dict = merged["output"].copy()
-                if "max_tokens" in value:
-                    output_dict["max_tokens"] = value["max_tokens"]
-                if "size_limits" in value and isinstance(value["size_limits"], dict):
-                    size_limits = output_dict["size_limits"].copy()
-                    if "file_max_mb" in value["size_limits"]:
-                        size_limits["file_max_mb"] = value["size_limits"]["file_max_mb"]
-                    output_dict["size_limits"] = size_limits
-                merged["output"] = cast(OutputDict, output_dict)
-
-        elif key == "thresholds" and isinstance(value, dict):
-            if isinstance(merged["thresholds"], dict):
-                thresholds_dict = merged["thresholds"].copy()
-                if "cat_threshold" in value:
-                    thresholds_dict["cat_threshold"] = value["cat_threshold"]
-                if "fold_threshold" in value:
-                    thresholds_dict["fold_threshold"] = value["fold_threshold"]
-                merged["thresholds"] = cast(ThresholdsDict, thresholds_dict)
-
-        elif key == "gitignore" and isinstance(value, dict):
-            if isinstance(merged["gitignore"], dict):
-                gitignore_dict = merged["gitignore"].copy()
-                if "respect" in value:
-                    gitignore_dict["respect"] = value["respect"]
-                merged["gitignore"] = cast(GitignoreDict, gitignore_dict)
+        if key == "output" and isinstance(merged["output"], dict):
+            merged["output"] = cast(OutputDict, _merge_output(merged["output"], value))
+        elif key == "thresholds" and isinstance(merged["thresholds"], dict):
+            merged["thresholds"] = cast(
+                ThresholdsDict, _merge_thresholds(merged["thresholds"], value)
+            )
+        elif key == "gitignore" and isinstance(merged["gitignore"], dict):
+            merged["gitignore"] = cast(GitignoreDict, _merge_gitignore(merged["gitignore"], value))
 
     return merged
 
@@ -185,3 +119,33 @@ class ConfigurationError(Exception):
     """Raised when configuration is invalid."""
 
     pass
+
+
+def load_config(config_path: Union[PathLike, None] = None) -> ConfigDict:
+    """Load configuration from file.
+
+    Args:
+    ----
+        config_path: Path to configuration file. If None, returns default config.
+
+    Returns:
+    -------
+        Loaded configuration dictionary.
+
+    Raises:
+    ------
+        ConfigurationError: If configuration is invalid.
+    """
+    if config_path is None:
+        return DEFAULT_CONFIG.copy()
+
+    try:
+        import yaml
+
+        with open(config_path) as f:
+            user_config = yaml.safe_load(f)
+        if not isinstance(user_config, dict):
+            raise ConfigurationError("Configuration must be a dictionary")
+        return deep_merge(DEFAULT_CONFIG, user_config)
+    except Exception as err:
+        raise ConfigurationError(f"Failed to load configuration: {err!s}") from err

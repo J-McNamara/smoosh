@@ -3,28 +3,43 @@ name: Release Candidate
 on:
   push:
     tags:
-      - "v*rc*" # v1.0.0rc1, v1.0.0rc2, etc.
+      - "v*rc*"  # v1.0.0rc1, v1.0.0rc2, etc.
 
 jobs:
   test-publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.11"  # Specify latest supported version
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install build twine
 
-      - name: Build and publish to Test PyPI
+      - name: Build package
+        run: python -m build
+
+      - name: Verify package
+        run: twine check dist/*
+
+      - name: Publish to Test PyPI
         env:
+          TWINE_REPOSITORY_URL: https://test.pypi.org/legacy/
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          TWINE_NON_INTERACTIVE: 1
+        run: twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+
+      - name: Verify installation from Test PyPI
         run: |
-          python -m build
-          twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+          python -m pip install \
+            --index-url https://test.pypi.org/simple/ \
+            --extra-index-url https://pypi.org/simple/ \
+            smoosh
+          python -c "import smoosh; print(smoosh.__version__)"

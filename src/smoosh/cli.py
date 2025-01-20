@@ -72,10 +72,10 @@ def main(path: str, mode: str, output: Optional[str], force_cat: bool) -> None:
         process_directory(target_path, mode, output_path, force_cat)
 
     except FileNotFoundError as err:
-        console.print(f"[bold red]Error:[/bold red] {str(err)}")
+        console.print(f"[bold red]Error:[/bold red] {err!s}")
         raise click.Abort() from err
     except Exception as err:
-        console.print(f"[bold red]Error:[/bold red] An unexpected error occurred: {str(err)}")
+        console.print(f"[bold red]Error:[/bold red] An unexpected error occurred: {err!s}")
         raise click.Abort() from err
 
 
@@ -107,11 +107,11 @@ def process_directory(path: Path, mode: str, output: Optional[Path], force_cat: 
             show_stats(stats)
 
     except (ConfigurationError, AnalysisError, GenerationError) as err:
-        console.print(f"[bold red]Error:[/bold red] {str(err)}")
+        console.print(f"[bold red]Error:[/bold red] {err!s}")
         raise click.Abort() from err
     except Exception as err:
         console.print("[bold red]An unexpected error occurred![/bold red]")
-        console.print(f"[red]{str(err)}[/red]")
+        console.print(f"[red]{err!s}[/red]")
         raise click.Abort() from err
 
 

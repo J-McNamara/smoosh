@@ -195,6 +195,8 @@ def gather_statistics(repo_info: RepositoryInfo, content: str) -> Dict[str, Unio
         "Composed Lines": composed_lines,
         "Original Characters": original_chars,
         "Composed Characters": composed_chars,
-        "Lines Ratio": (f"{composed_lines/original_lines:.2f}x" if original_lines else "N/A"),
-        "Characters Ratio": (f"{composed_chars/original_chars:.2f}x" if original_chars else "N/A"),
+        "Lines Ratio": (f"{composed_lines / original_lines:.2f}x" if original_lines else "N/A"),
+        "Characters Ratio": (
+            f"{composed_chars / original_chars:.2f}x" if original_chars else "N/A"
+        ),
     }

@@ -1,14 +1,14 @@
 """Test suite for the smoosh CLI."""
 
 from pathlib import Path
-from typing import Generator
 
 import pytest
 from click.testing import CliRunner
+
 from smoosh.cli import main
 
 
-@pytest.fixture(scope="function")  # type: ignore[misc]
+@pytest.fixture
 def runner() -> CliRunner:
     """Provide a Click CLI test runner.
 
@@ -20,8 +20,8 @@ def runner() -> CliRunner:
     return CliRunner()
 
 
-@pytest.fixture(scope="function")  # type: ignore[misc]
-def temp_package(tmp_path: Path) -> Generator[Path, None, None]:
+@pytest.fixture
+def temp_package(tmp_path: Path) -> Path:
     """Create a temporary Python package for testing.
 
     Args:
@@ -37,7 +37,7 @@ def temp_package(tmp_path: Path) -> Generator[Path, None, None]:
     pkg_dir = tmp_path / "sample_pkg"
     pkg_dir.mkdir()
     (pkg_dir / "__init__.py").write_text("")
-    yield tmp_path
+    return tmp_path
 
 
 def test_main_shows_help(runner: CliRunner) -> None:

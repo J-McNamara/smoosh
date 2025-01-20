@@ -6,11 +6,11 @@ from .logger import logger
 from .path_resolver import resolve_path
 
 __all__ = [
-    "load_config",
     "find_git_root",
     "get_file_size_mb",
     "get_gitignore_patterns",
-    "walk_repository",
+    "load_config",
     "logger",
     "resolve_path",
+    "walk_repository",
 ]

@@ -7,6 +7,6 @@ __all__ = [
     "FileInfo",
     "RepositoryInfo",
     "analyze_repository",
-    "load_file_contents",
     "generate_tree",
+    "load_file_contents",
 ]

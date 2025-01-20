@@ -9,7 +9,7 @@ description = "Software Module Outline & Organization Summary Helper"
 readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT"
-authors = [{ name = "Project Contributors" }]
+authors = [{ name = "Joshua T. McNamara" }]
 keywords = ["python", "analysis", "ast", "summary", "llm"]
 classifiers = [
   "Development Status :: 3 - Alpha",
@@ -22,67 +22,30 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-dependencies = ["click>=8.0", "rich>=10.0", "pyperclip>=1.8", "PyYAML>=6.0"]
+dependencies = [
+  "click>=8.0,<9.0",
+  "rich>=10.0,<11.0",
+  "pyperclip>=1.8,<2.0",
+  "PyYAML>=6.0,<7.0",
+]
 
 [project.optional-dependencies]
 dev = [
-  "pytest>=7.0",
-  "pytest-cov>=4.0",
-  "black>=22.0",
-  "isort>=5.0",
-  "mypy>=1.0",
-  "ruff>=0.0.1",
+  "pytest>=7.0,<8.0",
+  "pytest-cov>=4.0,<5.0",
+  "mypy>=1.0,<2.0",
+  "ruff>=0.3.0,<0.4.0",
+  "bandit>=1.7.8,<2.0.0",
+  "commitizen>=3.20.0,<4.0.0",
 ]
 
 [project.scripts]
 smoosh = "smoosh.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/yourusername/smoosh"
-Documentation = "https://github.com/yourusername/smoosh#readme"
-"Bug Tracker" = "https://github.com/yourusername/smoosh/issues"
-
-[tool.black]
-line-length = 100
-target-version = ['py38']
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-    \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | venv
-  | env
-  | _build
-  | buck-out
-  | build
-  | dist
-  | tests/data
-  | node_modules
-)/
-'''
-
-[tool.isort]
-profile = "black"
-line_length = 100
-multi_line_output = 3
-include_trailing_comma = true
-force_grid_wrap = 0
-use_parentheses = true
-ensure_newline_before_comments = true
-skip_glob = [
-  "tests/data/*",
-  ".venv/*",
-  "venv/*",
-  "env/*",
-  ".tox/*",
-  "build/*",
-  "dist/*",
-  "*.pyi",
-  "node_modules/*",
-]
+Homepage = "https://github.com/j-mcnamara/smoosh"
+Documentation = "https://github.com/j-mcnamara/smoosh#readme"
+"Bug Tracker" = "https://github.com/j-mcnamara/smoosh/issues"
 
 [tool.mypy]
 python_version = "3.8"
@@ -138,11 +101,15 @@ select = [
   "W",   # pycodestyle warnings
   "F",   # pyflakes
   "B",   # flake8-bugbear
+  "C",   # complexity checks
   "D",   # pydocstyle
   "I",   # isort
   "N",   # pep8-naming
+  "S",   # security checks
+  "PT",  # pytest style
   "UP",  # pyupgrade
   "ERA", # eradicate
+  "RUF", # ruff-specific rules
 ]
 ignore = [
   "D100", # Missing docstring in public module
@@ -150,6 +117,10 @@ ignore = [
   "D211", # No blank lines before class (to resolve conflict with D203)
   "D213", # Multi-line docstring summary should start at second line (to resolve conflict with D212)
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D", "S"] # Disable docstring & security checks for test data
+"__init__.py" = ["D"]  # Disable docstring checks for __init__.py
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
@@ -168,6 +139,7 @@ omit = [
 ]
 
 [tool.coverage.report]
+fail_under = 0
 exclude_lines = [
   "pragma: no cover",
   "def __repr__",
@@ -177,3 +149,7 @@ exclude_lines = [
   "pass",
   "raise ImportError",
 ]
+
+[tool.bandit]
+exclude_dirs = ["tests", "build", "dist", ".venv", "venv", "env"]
+skips = ["B101"]                                                  # Add specific bandit checks to skip if needed
