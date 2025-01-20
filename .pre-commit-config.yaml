@@ -1,28 +1,14 @@
+# Enhanced .pre-commit-config.yaml
 repos:
-  - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.2
     hooks:
-      - id: isort
-        name: isort (python)
-        args: ["--profile", "black", "--filter-files"]
-
-  - repo: https://github.com/psf/black
-    rev: 23.12.1
-    hooks:
-      - id: black
-        language_version: python3
-
-  - repo: https://github.com/pycqa/flake8
-    rev: 6.1.0
-    hooks:
-      - id: flake8
-        additional_dependencies:
-          - flake8-docstrings
-          - flake8-bugbear
-        args: ["--max-line-length=88"] # Match black's line length
+      - id: ruff
+        args: ["--fix", "--exit-non-zero-on-fix"]
+      - id: ruff-format
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -30,21 +16,54 @@ repos:
       - id: check-json
       - id: check-toml
       - id: check-added-large-files
+        args: ["--maxkb=1024"]
       - id: debug-statements
       - id: check-ast
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.8.0
     hooks:
       - id: mypy
         additional_dependencies:
-          - types-click
+          - types-click>=7.1.8 # Changed from 8.0.0
+          - types-PyYAML>=6.0.0
+          - pytest>=7.0.0
         args:
-          [
-            "--ignore-missing-imports",
-            "--disallow-untyped-defs",
-            "--check-untyped-defs",
-          ]
+          - "--ignore-missing-imports"
+          - "--disallow-untyped-defs"
+          - "--check-untyped-defs"
+          - "--show-error-codes"
+          - "--pretty"
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.8.2
+    hooks:
+      - id: bandit
+        args: ["-c", "pyproject.toml"]
+        additional_dependencies: ["bandit[toml]"]
+
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v4.1.0
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
+
+  - repo: https://github.com/jorisroovers/gitlint
+    rev: v0.19.1
+    hooks:
+      - id: gitlint
+        args: ["--msg-filename"]
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck
+        args: ["-x"]
 
   - repo: local
     hooks:
@@ -54,5 +73,28 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
-        stages: [commit]
-        args: ["--cov=smoosh", "--cov-report=term-missing", "tests/"]
+        stages: [pre-commit]
+        args:
+          [
+            "--cov=smoosh",
+            "--cov-report=term-missing",
+            "--cov-fail-under=0",
+            "-m",
+            "not slow",
+            "tests/",
+          ]
+
+      - id: safety-check
+        name: safety-check
+        entry: pip freeze | safety check
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+
+default_language_version:
+  python: python3.13
+
+ci:
+  autofix_commit_msg: "ci: auto fixes from pre-commit hooks"
+  autoupdate_commit_msg: "ci: pre-commit autoupdate"

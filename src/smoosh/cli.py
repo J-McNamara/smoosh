@@ -1,63 +1,118 @@
 """Command line interface for smoosh."""
 
 from pathlib import Path
-from time import sleep
+from typing import Any, Dict, Optional
 
 import click
+import pyperclip
 from rich.console import Console
 from rich.panel import Panel
-from rich.progress import track
+from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.table import Table
+
+from . import AnalysisError, ConfigurationError, GenerationError, __version__
+from .analyzer.repository import analyze_repository
+from .composer.concatenator import concatenate_files
+from .utils import load_config, resolve_path
 
 console = Console()
 
 
 def show_welcome() -> None:
-    """Show welcome message."""
+    """Show welcome message with version."""
     console.print(
         Panel.fit(
-            "🐍 [bold green]smoosh[/bold green] - Making Python packages digestible!",
+            f"\U0001f40d [bold green]smoosh v{__version__}[/bold green] - "
+            "Making Python packages digestible!",
             border_style="green",
         )
     )
 
 
-@click.group()
-@click.version_option()
-def main() -> None:
-    """Smoosh Python packages into digestible summaries."""
+def show_stats(stats: Dict[str, Any]) -> None:
+    """Display analysis and generation statistics."""
+    table = Table(title="Analysis Results", show_header=True)
+    table.add_column("Metric", style="cyan")
+    table.add_column("Value", style="magenta")
+    for key, value in stats.items():
+        table.add_row(key, str(value))
+    console.print(table)
+
+
+@click.command(context_settings={"ignore_unknown_options": True})
+@click.argument("path")
+@click.option(
+    "--mode",
+    type=click.Choice(["cat", "fold", "smoosh"]),
+    default="cat",
+    help="Processing mode (default: cat)",
+)
+@click.option("--output", "-o", type=click.Path(), help="Output file path")
+@click.option("--force-cat", is_flag=True, help="Override gitignore and size limits")
+@click.version_option(version=__version__)
+def main(path: str, mode: str, output: Optional[str], force_cat: bool) -> None:
+    """Smoosh Python packages into digestible summaries.
+
+    PATH can be either a filesystem path or an installed package name.
+    """
     show_welcome()
 
+    try:
+        # Resolve path or package name
+        target_path = resolve_path(path)
+        output_path = Path(output) if output else None
 
-@main.command()
-@click.argument("path", type=click.Path(exists=True, path_type=str))
-def analyze(path: str) -> None:
-    """Analyze a Python package."""
-    package_path = Path(path)
-    console.print(f"🔍 Analyzing package at: [bold blue]{package_path}[/bold blue]")
+        if not target_path.is_dir():
+            console.print(f"[bold red]Error:[/bold red] {path} is not a directory")
+            raise click.Abort()
 
-    # Simulate analysis with progress bar
-    for _ in track(range(5), description="Analyzing..."):
-        sleep(0.2)
+        console.print(f"Processing: [bold blue]{target_path}[/bold blue]")
 
-    console.print("✨ [bold green]Analysis complete![/bold green] (Coming soon...)")
+        # Load config and process
+        process_directory(target_path, mode, output_path, force_cat)
 
-
-@main.command()
-@click.argument("path", type=click.Path(exists=True, path_type=str))
-def summarize(path: str) -> None:
-    """Generate LLM-friendly summary."""
-    package_path = Path(path)
-    console.print(f"📝 Summarizing package at: [bold blue]{package_path}[/bold blue]")
-    console.print("🚧 [yellow]Coming soon![/yellow]")
+    except FileNotFoundError as err:
+        console.print(f"[bold red]Error:[/bold red] {err!s}")
+        raise click.Abort() from err
+    except Exception as err:
+        console.print(f"[bold red]Error:[/bold red] An unexpected error occurred: {err!s}")
+        raise click.Abort() from err
 
 
-@main.command()
-@click.argument("path", type=click.Path(exists=True, path_type=str))
-def structure(path: str) -> None:
-    """Show package structure."""
-    package_path = Path(path)
-    console.print(f"📦 Analyzing structure of: [bold blue]{package_path}[/bold blue]")
-    console.print("🚧 [yellow]Coming soon![/yellow]")
+def process_directory(path: Path, mode: str, output: Optional[Path], force_cat: bool) -> None:
+    """Process a directory with the specified mode."""
+    try:
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            # Analyze repository
+            progress.add_task("Analyzing...", total=None)
+            repo_info = analyze_repository(path, load_config(path), force_cat)
+
+            # Compose output
+            progress.add_task("Generating summary...", total=None)
+            result, stats = concatenate_files(repo_info, mode, load_config(path))
+
+            # Handle output
+            if output:
+                output.write_text(result)
+                console.print(f"\u2728 Output written to: [bold blue]{output}[/bold blue]")
+            else:
+                pyperclip.copy(result)
+                console.print("\u2728 Output copied to clipboard!")
+
+            # Show statistics
+            show_stats(stats)
+
+    except (ConfigurationError, AnalysisError, GenerationError) as err:
+        console.print(f"[bold red]Error:[/bold red] {err!s}")
+        raise click.Abort() from err
+    except Exception as err:
+        console.print("[bold red]An unexpected error occurred![/bold red]")
+        console.print(f"[red]{err!s}[/red]")
+        raise click.Abort() from err
 
 
 if __name__ == "__main__":
