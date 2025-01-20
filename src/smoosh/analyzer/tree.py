@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Union
 
-from ..types import FileInfo
+from ..custom_types import FileInfo
 
 # Define PathLike type consistently with file_utils
 PathLike = Union[str, "os.PathLike[str]"]

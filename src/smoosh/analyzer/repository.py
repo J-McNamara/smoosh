@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional, Set, Union
 
-from ..types import FileInfo
+from ..custom_types import FileInfo
 from ..utils.config import ConfigDict
 from ..utils.file_utils import (
     find_git_root,
