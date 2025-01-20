@@ -31,8 +31,18 @@ jobs:
 
       - name: Lint and format
         run: |
-          ruff check .
-          ruff format --check .
+          ruff check . --fix
+          ruff format .
+
+      - name: Commit fixes
+        if: github.event_name == 'pull_request'
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            git config --global user.name 'GitHub Actions'
+            git config --global user.email 'actions@github.com'
+            git commit -am "style: auto format with ruff"
+            git push
+          fi
 
       - name: Type check
         run: mypy src/smoosh
