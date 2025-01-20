@@ -1,7 +1,7 @@
 """Command line interface for smoosh."""
 
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, cast
 
 import click
 import pyperclip
@@ -13,7 +13,7 @@ from rich.table import Table
 from . import AnalysisError, ConfigurationError, GenerationError, __version__
 from .analyzer.repository import analyze_repository
 from .composer.concatenator import concatenate_files
-from .utils import load_config, resolve_path
+from .utils.config import ConfigDict, load_config
 
 console = Console()
 
@@ -22,7 +22,7 @@ def show_welcome() -> None:
     """Show welcome message with version."""
     console.print(
         Panel.fit(
-            f"\U0001f40d [bold green]smoosh v{__version__}[/bold green] - "
+            "🐍 [bold green]smoosh v{__version__}[/bold green] - "
             "Making Python packages digestible!",
             border_style="green",
         )
@@ -39,80 +39,67 @@ def show_stats(stats: Dict[str, Any]) -> None:
     console.print(table)
 
 
-@click.command(context_settings={"ignore_unknown_options": True})
-@click.argument("path")
+@click.command()
+@click.argument(
+    "target",
+    type=click.Path(exists=True, file_okay=True, dir_okay=True),
+)
 @click.option(
     "--mode",
     type=click.Choice(["cat", "fold", "smoosh"]),
     default="cat",
-    help="Processing mode (default: cat)",
+    help="Compression mode (cat: full concatenation, fold/smoosh: coming soon)",
 )
-@click.option("--output", "-o", type=click.Path(), help="Output file path")
+@click.option("--output", "-o", type=str, help="Output file path")
 @click.option("--force-cat", is_flag=True, help="Override gitignore and size limits")
 @click.version_option(version=__version__)
-def main(path: str, mode: str, output: Optional[str], force_cat: bool) -> None:
-    """Smoosh Python packages into digestible summaries.
+def main(target: str, mode: str, output: Optional[str], force_cat: bool) -> None:
+    """Smoosh software packages into plaintext summaries on the clipboard.
 
-    PATH can be either a filesystem path or an installed package name.
+    TARGET can be a code repository, directory of text files, or a text file.
     """
     show_welcome()
 
     try:
-        # Resolve path or package name
-        target_path = resolve_path(path)
+        # Convert paths
+        target_path = Path(target)
         output_path = Path(output) if output else None
 
-        if not target_path.is_dir():
-            console.print(f"[bold red]Error:[/bold red] {path} is not a directory")
-            raise click.Abort()
+        # Load configuration, looking for smoosh.yaml in the directory
+        config_dir = target_path if target_path.is_dir() else target_path.parent
+        config = cast(ConfigDict, load_config(config_dir))
 
-        console.print(f"Processing: [bold blue]{target_path}[/bold blue]")
-
-        # Load config and process
-        process_directory(target_path, mode, output_path, force_cat)
-
-    except FileNotFoundError as err:
-        console.print(f"[bold red]Error:[/bold red] {err!s}")
-        raise click.Abort() from err
-    except Exception as err:
-        console.print(f"[bold red]Error:[/bold red] An unexpected error occurred: {err!s}")
-        raise click.Abort() from err
-
-
-def process_directory(path: Path, mode: str, output: Optional[Path], force_cat: bool) -> None:
-    """Process a directory with the specified mode."""
-    try:
         with Progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
             console=console,
         ) as progress:
             # Analyze repository
-            progress.add_task("Analyzing...", total=None)
-            repo_info = analyze_repository(path, load_config(path), force_cat)
+            progress.add_task("Analyzing repository...", total=None)
+            repo_info = analyze_repository(target_path, config, force_cat)
 
             # Compose output
             progress.add_task("Generating summary...", total=None)
-            result, stats = concatenate_files(repo_info, mode, load_config(path))
+            result, stats = concatenate_files(repo_info, mode, config)
 
             # Handle output
-            if output:
-                output.write_text(result)
-                console.print(f"\u2728 Output written to: [bold blue]{output}[/bold blue]")
+            if output_path:
+                output_path.write_text(result)
+                console.print(f"✨ Output written to: [bold blue]{output_path}[/bold blue]")
             else:
                 pyperclip.copy(result)
-                console.print("\u2728 Output copied to clipboard!")
+                console.print("✨ Output copied to clipboard!")
 
             # Show statistics
             show_stats(stats)
 
-    except (ConfigurationError, AnalysisError, GenerationError) as err:
-        console.print(f"[bold red]Error:[/bold red] {err!s}")
-        raise click.Abort() from err
-    except Exception as err:
-        console.print("[bold red]An unexpected error occurred![/bold red]")
-        console.print(f"[red]{err!s}[/red]")
-        raise click.Abort() from err
+    except (ConfigurationError, AnalysisError, GenerationError) as e:
+        console.print(f"[bold red]Error:[/bold red] {e!s}")
+        raise click.Abort() from e
+    except Exception as e:
+        console.print("[bold red]An unexpected error occurred![/bold bold]")
+        console.print(f"[red]{e!s}[/red]")
+        raise click.Abort() from e
 
 
 if __name__ == "__main__":

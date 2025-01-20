@@ -28,8 +28,8 @@ def temp_package(tmp_path: Path) -> Path:
     ----
         tmp_path: Pytest fixture providing temporary directory path
 
-    Yields:
-    ------
+    Returns:
+    -------
         Path: Path to temporary directory containing the test package
 
     """
@@ -37,7 +37,7 @@ def temp_package(tmp_path: Path) -> Path:
     pkg_dir = tmp_path / "sample_pkg"
     pkg_dir.mkdir()
     (pkg_dir / "__init__.py").write_text("")
-    return tmp_path
+    return pkg_dir
 
 
 def test_main_shows_help(runner: CliRunner) -> None:
@@ -49,9 +49,8 @@ def test_main_shows_help(runner: CliRunner) -> None:
 
     """
     result = runner.invoke(main, ["--help"])
-    expected_text = "Smoosh Python packages into digestible summaries"
+    expected_text = "Smoosh software packages into plaintext summaries on the clipboard"
 
-    # Using standard pytest assertions with descriptive messages
     if result.exit_code != 0:
         pytest.fail("CLI should exit successfully")
     if expected_text not in result.output:

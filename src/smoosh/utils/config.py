@@ -1,7 +1,12 @@
 """Configuration handling for smoosh."""
 
 import os
-from typing import Any, Dict, TypedDict, Union, cast
+from pathlib import Path
+from typing import Any, Dict, TypedDict, Union
+
+import yaml
+
+from .. import ConfigurationError  # Import the exception from root package
 
 # Define PathLike type consistently with other modules
 PathLike = Union[str, "os.PathLike[str]"]
@@ -83,69 +88,58 @@ def _merge_gitignore(
     return gitignore_dict
 
 
-def deep_merge(base: ConfigDict, update: Dict[str, Any]) -> ConfigDict:
-    """Recursively merge two dictionaries.
+def load_config(config_dir: Path) -> Dict[str, Any]:
+    """Load configuration from smoosh.yaml in the specified directory.
 
     Args:
-    ----
-        base: Base dictionary.
-        update: Dictionary to merge into base.
+        config_dir: Directory containing the configuration file
 
     Returns:
-    -------
-        Merged dictionary.
-
-    """
-    merged = base.copy()
-    valid_keys = {"output", "thresholds", "gitignore"}
-
-    for key, value in update.items():
-        if key not in valid_keys or not isinstance(value, dict):
-            continue
-
-        if key == "output" and isinstance(merged["output"], dict):
-            merged["output"] = cast(OutputDict, _merge_output(merged["output"], value))
-        elif key == "thresholds" and isinstance(merged["thresholds"], dict):
-            merged["thresholds"] = cast(
-                ThresholdsDict, _merge_thresholds(merged["thresholds"], value)
-            )
-        elif key == "gitignore" and isinstance(merged["gitignore"], dict):
-            merged["gitignore"] = cast(GitignoreDict, _merge_gitignore(merged["gitignore"], value))
-
-    return merged
-
-
-class ConfigurationError(Exception):
-    """Raised when configuration is invalid."""
-
-    pass
-
-
-def load_config(config_path: Union[PathLike, None] = None) -> ConfigDict:
-    """Load configuration from file.
-
-    Args:
-    ----
-        config_path: Path to configuration file. If None, returns default config.
-
-    Returns:
-    -------
-        Loaded configuration dictionary.
+        Configuration dictionary with defaults
 
     Raises:
-    ------
-        ConfigurationError: If configuration is invalid.
+        ConfigurationError: If configuration loading fails
     """
-    if config_path is None:
-        return DEFAULT_CONFIG.copy()
+    # Define default configuration
+    default_config = {
+        "gitignore": {"respect": True},
+        "output": {"size_limits": {"file_max_mb": 1.0}, "max_tokens": 10000},
+    }
 
     try:
-        import yaml
+        config_path = config_dir / "smoosh.yaml"
 
-        with open(config_path) as f:
-            user_config = yaml.safe_load(f)
-        if not isinstance(user_config, dict):
-            raise ConfigurationError("Configuration must be a dictionary")
-        return deep_merge(DEFAULT_CONFIG, user_config)
-    except Exception as err:
-        raise ConfigurationError(f"Failed to load configuration: {err!s}") from err
+        # If config file exists, load and merge with defaults
+        if config_path.is_file():
+            with open(config_path) as f:
+                user_config = yaml.safe_load(f)
+                if user_config:
+                    # Deep merge user config with defaults
+                    return deep_merge(default_config, user_config)
+
+        # If no config file or it's empty, return defaults
+        return default_config
+
+    except Exception as e:
+        raise ConfigurationError(f"Failed to load configuration: {e}") from e
+
+
+def deep_merge(base: Dict[str, Any], update: Dict[str, Any]) -> Dict[str, Any]:
+    """Deep merge two dictionaries, updating base with values from update.
+
+    Args:
+        base: Base dictionary to merge into
+        update: Dictionary with values to merge
+
+    Returns:
+        Merged dictionary
+    """
+    merged = base.copy()
+
+    for key, value in update.items():
+        if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
+            merged[key] = deep_merge(merged[key], value)
+        else:
+            merged[key] = value
+
+    return merged  # Added the missing return statement
