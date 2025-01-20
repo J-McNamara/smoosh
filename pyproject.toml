@@ -24,9 +24,10 @@ classifiers = [
 ]
 dependencies = [
   "click>=8.0,<9.0",
-  "rich>=10.0,<11.0",
+  "rich>=12.0,<13.0",    # Updated version
   "pyperclip>=1.8,<2.0",
   "PyYAML>=6.0,<7.0",
+  "chardet>=5.2.0,<6.0", # Added dependency
 ]
 
 [project.optional-dependencies]
@@ -38,6 +39,7 @@ dev = [
   "bandit>=1.7.8,<2.0.0",
   "commitizen>=3.20.0,<4.0.0",
   "pre-commit>=3.5.0,<4.0.0",
+  "twine>=6.0.1,<7.0",         # Added to dev dependencies
 ]
 
 [project.scripts]
