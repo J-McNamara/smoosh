@@ -11,24 +11,34 @@ PathLike = Union[str, "os.PathLike[str]"]
 
 
 class SizeLimitsDict(TypedDict):
+    """TypedDict for size limits configuration."""
+
     file_max_mb: float
 
 
 class OutputDict(TypedDict):
+    """TypedDict for output configuration."""
+
     max_tokens: int
     size_limits: SizeLimitsDict
 
 
 class ThresholdsDict(TypedDict):
+    """TypedDict for thresholds configuration."""
+
     cat_threshold: int
     fold_threshold: int
 
 
 class GitignoreDict(TypedDict):
+    """TypedDict for gitignore configuration."""
+
     respect: bool
 
 
 class ConfigDict(TypedDict):
+    """TypedDict for the overall configuration."""
+
     output: OutputDict
     thresholds: ThresholdsDict
     gitignore: GitignoreDict
@@ -46,15 +56,15 @@ def load_config(repo_path: PathLike) -> ConfigDict:
 
     Args:
     ----
-        repo_path: Path to the repository root
+        repo_path: Path to the repository root.
 
     Returns:
     -------
-        Dict containing merged configuration (defaults + user config)
+        Dict containing merged configuration (defaults + user config).
 
     Raises:
     ------
-        ConfigurationError: If config file exists but is invalid
+        ConfigurationError: If config file exists but is invalid.
 
     """
     repo_path = Path(str(repo_path))
@@ -71,9 +81,9 @@ def load_config(repo_path: PathLike) -> ConfigDict:
                 if user_config:
                     config = deep_merge(config, user_config)
         except yaml.YAMLError as e:
-            raise ConfigurationError(f"Invalid YAML in config file: {e}")
+            raise ConfigurationError(f"Invalid YAML in config file: {e}") from e
         except Exception as e:
-            raise ConfigurationError(f"Error reading config file: {e}")
+            raise ConfigurationError(f"Error reading config file: {e}") from e
 
     # Validate the final configuration
     validate_config(config)
@@ -85,11 +95,11 @@ def validate_config(config: ConfigDict) -> None:
 
     Args:
     ----
-        config: Configuration dictionary to validate
+        config: Configuration dictionary to validate.
 
     Raises:
     ------
-        ConfigurationError: If configuration is invalid
+        ConfigurationError: If configuration is invalid.
 
     """
     # Check required sections
@@ -125,12 +135,12 @@ def deep_merge(base: ConfigDict, update: Dict[str, Any]) -> ConfigDict:
 
     Args:
     ----
-        base: Base dictionary
-        update: Dictionary to merge into base
+        base: Base dictionary.
+        update: Dictionary to merge into base.
 
     Returns:
     -------
-        Merged dictionary
+        Merged dictionary.
 
     """
     merged = base.copy()

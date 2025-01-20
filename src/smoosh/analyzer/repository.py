@@ -130,7 +130,7 @@ def analyze_repository(
         )
 
     except Exception as e:
-        raise AnalysisError(f"Failed to analyze repository: {e}")
+        raise AnalysisError(f"Failed to analyze repository: {e}") from e
 
 
 def load_file_contents(repo_info: RepositoryInfo) -> None:

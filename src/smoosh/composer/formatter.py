@@ -45,7 +45,7 @@ def format_output(content: str, stats: Dict[str, Any], format_type: str = "text"
 
         return formatters[format_type](content, stats)
     except Exception as e:
-        raise FormattingError(f"Failed to format composition: {e}")
+        raise FormattingError(f"Failed to format composition: {e}") from e
 
 
 def format_text(content: str, stats: Dict[str, Any]) -> str:

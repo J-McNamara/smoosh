@@ -1,4 +1,4 @@
-"""smoosh - Software Module Outline & Organization Summary Helper"""
+"""smoosh - Software Module Outline & Organization Summary Helper."""
 
 import os
 from importlib.metadata import PackageNotFoundError, version

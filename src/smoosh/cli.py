@@ -22,7 +22,8 @@ def show_welcome() -> None:
     """Show welcome message with version."""
     console.print(
         Panel.fit(
-            f"🐍 [bold green]smoosh v{__version__}[/bold green] - Making Python packages digestible!",
+            f"\U0001f40d [bold green]smoosh v{__version__}[/bold green] - "
+            "Making Python packages digestible!",
             border_style="green",
         )
     )
@@ -68,23 +69,19 @@ def main(path: str, mode: str, output: Optional[str], force_cat: bool) -> None:
         console.print(f"Processing: [bold blue]{target_path}[/bold blue]")
 
         # Load config and process
-        config = load_config(target_path)
         process_directory(target_path, mode, output_path, force_cat)
 
-    except FileNotFoundError as e:
-        console.print(f"[bold red]Error:[/bold red] {str(e)}")
-        raise click.Abort()
-    except Exception as e:
-        console.print(f"[bold red]Error:[/bold red] An unexpected error occurred: {str(e)}")
-        raise click.Abort()
+    except FileNotFoundError as err:
+        console.print(f"[bold red]Error:[/bold red] {str(err)}")
+        raise click.Abort() from err
+    except Exception as err:
+        console.print(f"[bold red]Error:[/bold red] An unexpected error occurred: {str(err)}")
+        raise click.Abort() from err
 
 
 def process_directory(path: Path, mode: str, output: Optional[Path], force_cat: bool) -> None:
     """Process a directory with the specified mode."""
     try:
-        # Load configuration
-        config = load_config(path)
-
         with Progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
@@ -92,30 +89,30 @@ def process_directory(path: Path, mode: str, output: Optional[Path], force_cat: 
         ) as progress:
             # Analyze repository
             progress.add_task("Analyzing...", total=None)
-            repo_info = analyze_repository(path, config, force_cat)
+            repo_info = analyze_repository(path, load_config(path), force_cat)
 
             # Compose output
             progress.add_task("Generating summary...", total=None)
-            result, stats = concatenate_files(repo_info, mode, config)
+            result, stats = concatenate_files(repo_info, mode, load_config(path))
 
             # Handle output
             if output:
                 output.write_text(result)
-                console.print(f"✨ Output written to: [bold blue]{output}[/bold blue]")
+                console.print(f"\u2728 Output written to: [bold blue]{output}[/bold blue]")
             else:
                 pyperclip.copy(result)
-                console.print("✨ Output copied to clipboard!")
+                console.print("\u2728 Output copied to clipboard!")
 
             # Show statistics
             show_stats(stats)
 
-    except (ConfigurationError, AnalysisError, GenerationError) as e:
-        console.print(f"[bold red]Error:[/bold red] {str(e)}")
-        raise click.Abort()
-    except Exception as e:
+    except (ConfigurationError, AnalysisError, GenerationError) as err:
+        console.print(f"[bold red]Error:[/bold red] {str(err)}")
+        raise click.Abort() from err
+    except Exception as err:
         console.print("[bold red]An unexpected error occurred![/bold red]")
-        console.print(f"[red]{str(e)}[/red]")
-        raise click.Abort()
+        console.print(f"[red]{str(err)}[/red]")
+        raise click.Abort() from err
 
 
 if __name__ == "__main__":

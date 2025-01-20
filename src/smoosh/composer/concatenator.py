@@ -47,7 +47,7 @@ def concatenate_files(
         full_composition = f"{header}\n\n{content}"
 
         # Check against max tokens if configured
-        max_tokens = config["output"]["max_tokens"]
+        max_tokens = config["output"].get("max_tokens")
         if max_tokens and len(full_composition.split()) > max_tokens:
             logger.warning(
                 f"Composition exceeds max_tokens ({max_tokens}). "
@@ -57,7 +57,7 @@ def concatenate_files(
         return full_composition, stats
 
     except Exception as e:
-        raise CompositionError(f"Failed to compose repository content: {e}")
+        raise CompositionError(f"Failed to compose repository content: {e}") from e
 
 
 def compose_header(repo_info: RepositoryInfo, mode: str) -> str:

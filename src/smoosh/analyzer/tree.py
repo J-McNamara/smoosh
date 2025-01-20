@@ -21,6 +21,13 @@ class TreeNode:
     is_python: bool = False
 
     def __init__(self, name: str, is_dir: bool = True):
+        """Initialize a TreeNode.
+
+        Args:
+        ----
+            name: Name of the node (file or directory)
+            is_dir: Whether the node represents a directory
+        """
         self.name = name
         self.is_dir = is_dir
         self.children = {}
@@ -99,7 +106,7 @@ def format_tree(
 
     # Process children
     children_count = len(sorted_children)
-    for i, (child_name, child_node) in enumerate(sorted_children):
+    for i, (_, child_node) in enumerate(sorted_children):  # Removed unused `child_name`
         child_prefix = prefix + ("    " if is_last else "│   ")
         line += format_tree(child_node, child_prefix, i == children_count - 1, include_indicators)
 
