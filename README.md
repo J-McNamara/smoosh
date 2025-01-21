@@ -5,7 +5,7 @@ smoosh is a Python tool that helps developers understand and work with code repo
 ## Features
 
 - **Repo Snapshot**: Copy code repositories to clipboard as plaintext and paste to your favorite AI tools!
-- **Smart Exclusion**: excludes files in .gitignore, non-text, caches, large data files
+- **Smart Exclusion**: Exclude files in .gitignore, non-text, caches, large data files
 - **Flexible Output Formats**: Export summaries in text, JSON, or YAML
 - **Command Line Interface**: Easy-to-use CLI for quick analysis
 
