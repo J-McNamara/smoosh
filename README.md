@@ -1,14 +1,13 @@
 # smoosh: Software Module Outline & Organization Summary Helper
 
-smoosh is a Python tool that helps developers understand and work with Python packages by generating LLM-optimized summaries of package structure, dependencies, and patterns. It creates compressed yet meaningful representations that can be effectively used in LLM prompts for package understanding and troubleshooting.
+smoosh is a Python tool that helps developers understand and work with code repositories by generating LLM-optimized summaries of software modules, structure, dependencies, and patterns. It creates compressed yet meaningful representations that can be effectively used in LLM prompts for package understanding and troubleshooting.
 
 ## Features
 
-- **Intelligent Package Analysis**: Parse and analyze Python packages using AST to understand structure, relationships, and patterns
-- **Smart Compression**: Generate compact package representations while preserving essential information
-- **LLM-Optimized Output**: Create summaries specifically formatted for effective use with Language Models
-- **Flexible Output Formats**: Export summaries in JSON, YAML, Markdown, or custom LLM formats
-- **Command Line Interface**: Easy-to-use CLI for quick package analysis
+- **Repo Snapshot**: Copy code repositories to clipboard as plaintext and paste to your favorite AI tools!
+- **Smart Exclusion**: excludes files in .gitignore, non-text, caches, large data files
+- **Flexible Output Formats**: Export summaries in text, JSON, or YAML
+- **Command Line Interface**: Easy-to-use CLI for quick analysis
 
 ## Installation
 
@@ -24,19 +23,13 @@ Analyze a Python package and generate a summary:
 smoosh /path/to/package
 ```
 
-Generate a focused API summary:
-
-```bash
-smoosh /path/to/package --focus api
-```
-
 Export to specific format:
 
 ```bash
 smoosh /path/to/package --format json --output summary.json
 ```
 
-## Configuration
+## Configuration (optional)
 
 Create a `smoosh.yaml` in your project root:
 
@@ -58,54 +51,89 @@ output:
   max_tokens: 1000
 ```
 
-## Key Components
-
-### Code Analyzer
-- AST-based Python file parsing
-- Function and class relationship mapping
-- Dependency analysis
-- Pattern detection
-
-### Compression Engine
-- Intelligent type abbreviation
-- Pattern reference system
-- Call chain compression
-- Reference deduplication
-
-### Summary Generator
-- Multiple output format support
-- Customizable summary types
-- LLM-optimized formatting
-
-## CLI Options
-
-```bash
-Options:
-  --focus TEXT          Analysis focus (api, structure, patterns)
-  --format TEXT         Output format (json, yaml, markdown, llm)
-  --output FILE        Output file path
-  --compression-level  Compression level (low, medium, high)
-  --to-clipboard       Copy output to clipboard
-  --help              Show this message and exit
-```
-
 ## Example Output
 
-```yaml
-package:
-  name: "example_pkg"
-  structure:
-    modules: ["core", "utils", "api"]
-    patterns:
-      p1: "DataFrame processor"
-      p2: "Data validation"
+```
+╭───────────────────────────────────────────────────────────────╮
+│ 🐍 smoosh v0.1.2 - Making Python packages digestible!         │
+╰───────────────────────────────────────────────────────────────╯
+⠋ Analyzing repository...INFO: Processing directory at code/smoosh
+⠋ Analyzing repository...
+⠋ Generating summary...
+✨ Output copied to clipboard!
+        Analysis Results        
+┏━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┓
+┃ Metric              ┃ Value  ┃
+┡━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━┩
+│ Repository Size     │ 0.06MB │
+│ Total Files         │ 36     │
+│ Python Files        │ 17     │
+│ Original Lines      │ 2436   │
+│ Composed Lines      │ 2520   │
+│ Original Characters │ 62187  │
+│ Composed Characters │ 63366  │
+│ Lines Ratio         │ 1.03x  │
+│ Characters Ratio    │ 1.02x  │
+└─────────────────────┴────────┘
+⠹ Analyzing repository...
+⠹ Generating summary...  
+```
+**Clipboard output**
+```
+Repository: smoosh
+Mode: cat
+Files: 36 (17 Python)
+Total Size: 0.06MB
 
-  api:
-    core:
-      - "process_data(df: DataFrame) -> DataFrame"
-      - "validate_input(D[s, Any]) -> bool"
-    utils:
-      - "load_config(path: s) -> Config"
+Repository Structure:
+smoosh/
+    ├── .github/
+    │   └── workflows/
+    │       ├── ci.yml
+    │       ├── publish.yml
+    │       └── release-candidate.yml
+    ├── src/
+    │   └── smoosh/
+    │       ├── analyzer/
+    │       │   ├── __init__.py
+    │       │   ├── repository.py
+    │       │   └── tree.py
+    │       ├── composer/
+    │       │   ├── __init__.py
+    │       │   ├── concatenator.py
+    │       │   └── formatter.py
+    │       ├── utils/
+    │       │   ├── __init__.py
+    │       │   ├── config.py
+    │       │   ├── file_utils.py
+    │       │   ├── logger.py
+    │       │   └── path_resolver.py
+    │       ├── __init__.py
+    │       ├── custom_types.py
+    │       └── version.py
+    ├── tests/
+    │   ├── utils/
+    │   │   └── generate_sample.py
+    │   ├── __init__.py
+    │   └── test_cli.py
+    ├── .flake8
+    ├── .gitignore
+    ├── .pre-commit-config.yaml
+    ├── DEVELOPMENT.md
+    ├── LICENSE
+    ├── pyproject.toml
+    └── README.md
+
+
+
+### File: .flake8 ###
+[flake8]
+max-line-length = 100
+exclude =
+    .git,
+    __pycache__,
+    build,
+    dist
 ```
 
 ## Development
@@ -144,19 +172,18 @@ pytest
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Acknowledgments
-
-- Built with Python's ast module for code analysis
-- Inspired by the need for better LLM-based code understanding tools
-
 ## Roadmap
 
 Future developments may include:
-- Snakemake pipeline analysis
+- Smart Compression: Generate compact package representations while preserving essential information
+- LLM-Optimized Output: Create summaries specifically formatted for effective use with Language Models
 - Error pattern detection
 - IDE integration
 - Documentation generation
-- Learning path creation
+- Intelligent type abbreviation
+- Pattern reference system
+- Call chain compression
+- Reference deduplication
 
 ## Support
 
