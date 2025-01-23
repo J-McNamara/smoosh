@@ -28,7 +28,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install ruff==0.3.0 mypy==1.8.0 pytest pytest-cov safety gitlint shellcheck-py \
-            types-PyYAML types-click>=7.1.8 pytest>=7.0.0 types-all
+            types-PyYAML types-click>=7.1.8 pytest>=7.0.0
           pip install -e .[dev]
 
       - name: Lint and format
