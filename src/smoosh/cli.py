@@ -22,7 +22,7 @@ def show_welcome() -> None:
     """Show welcome message with version."""
     console.print(
         Panel.fit(
-            "🐍 [bold green]smoosh v{__version__}[/bold green] - "
+            f"🐍 [bold green]smoosh v{__version__}[/bold green] - "
             "Making Python packages digestible!",
             border_style="green",
         )
