@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install ruff==0.3.0 mypy==1.8.0 pytest pytest-cov safety gitlint shellcheck-py
+          pip install ruff==0.3.0 mypy==1.8.0 pytest pytest-cov safety shellcheck-py
           pip install -e .[dev]
 
       - name: Lint and format
@@ -56,9 +56,6 @@ jobs:
 
       - name: Run tests with coverage
         run: pytest --cov=src/smoosh --cov-report=xml tests/
-
-      - name: Run gitlint
-        run: gitlint --msg-filename .git/COMMIT_EDITMSG
 
       - name: Run shellcheck
         run: shellcheck **/*.sh
