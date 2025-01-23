@@ -7,7 +7,7 @@ name = "smoosh"
 version = "0.1.1"
 description = "Software Module Outline & Organization Summary Helper"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 license = "MIT"
 authors = [{ name = "Joshua T. McNamara" }]
 keywords = ["python", "analysis", "ast", "summary", "llm"]
@@ -38,6 +38,8 @@ dependencies = [
 dev = [
   "pytest>=7.0,<8.0",
   "pytest-cov>=4.0,<5.0",
+  "types-pkg-resources",
+  "pytest>=7.0,<8.0",
   "mypy>=1.0,<2.0",
   "ruff>=0.3.0,<0.4.0",
   "bandit>=1.7.8,<2.0.0",
