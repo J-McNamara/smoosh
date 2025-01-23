@@ -23,7 +23,7 @@ def show_welcome() -> None:
     console.print(
         Panel.fit(
             f"🐍 [bold green]smoosh v{__version__}[/bold green] - "
-            "Making Python packages digestible!",
+            "Making code repositories digestible!",
             border_style="green",
         )
     )
