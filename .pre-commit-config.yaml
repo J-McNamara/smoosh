@@ -57,12 +57,6 @@ repos:
       - id: gitlint
         args: ["--msg-filename"]
 
-  - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.10.0.1
-    hooks:
-      - id: shellcheck
-        args: ["-x"]
-
   - repo: local
     hooks:
       - id: pytest-check

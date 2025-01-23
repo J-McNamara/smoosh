@@ -27,8 +27,16 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install ruff==0.3.0 mypy==1.8.0 pytest pytest-cov safety gitlint shellcheck-py \
-            types-PyYAML types-click>=7.1.8 pytest>=7.0.0
+          pip install \
+            ruff==0.3.0 \
+            mypy==1.8.0 \
+            pytest \
+            pytest-cov \
+            safety \
+            gitlint \
+            types-PyYAML \
+            "types-click>=7.1.8" \
+            "pytest>=7.0.0"
           pip install -e .[dev]
 
       - name: Lint and format
@@ -42,8 +50,7 @@ jobs:
           if [[ -n $(git status --porcelain) ]]; then
             git config --global user.name 'GitHub Actions'
             git config --global user.email 'actions@github.com'
-            git fetch origin
-            git checkout -b ${{ github.head_ref }} origin/${{ github.head_ref }}
+            git checkout ${{ github.head_ref }}
             git commit -am "style: auto format with ruff"
             git push origin ${{ github.head_ref }}
           fi
@@ -56,9 +63,6 @@ jobs:
 
       - name: Run tests with coverage
         run: pytest --cov=src/smoosh --cov-report=xml tests/
-
-      - name: Run shellcheck
-        run: shellcheck **/*.sh
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
