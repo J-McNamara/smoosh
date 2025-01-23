@@ -61,7 +61,7 @@ output:
 ⠋ Analyzing repository...
 ⠋ Generating summary...
 ✨ Output copied to clipboard!
-        Analysis Results        
+        Analysis Results
 ┏━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┓
 ┃ Metric              ┃ Value  ┃
 ┡━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━┩
@@ -76,7 +76,7 @@ output:
 │ Characters Ratio    │ 1.02x  │
 └─────────────────────┴────────┘
 ⠹ Analyzing repository...
-⠹ Generating summary...  
+⠹ Generating summary...
 ```
 **Clipboard output**
 ```

@@ -99,7 +99,10 @@ def format_yaml(content: str, stats: Dict[str, Any]) -> str:
 
     """
     data = {"statistics": stats, "composition": content}
-    return yaml.dump(data, sort_keys=False)
+    result = yaml.dump(data, sort_keys=False)
+    if not isinstance(result, str):
+        raise TypeError("YAML dump did not return a string")
+    return result
 
 
 def format_markdown(content: str, stats: Dict[str, Any]) -> str:
