@@ -1,5 +1,7 @@
 # smoosh: Software Module Outline & Organization Summary Helper
 
+**Snapshot an entire repo or directory as plaintext on the clipboard and paste to your favorite AI tool!**
+
 smoosh is a Python tool that helps developers understand and work with code repositories by generating LLM-optimized summaries of software modules, structure, dependencies, and patterns. It creates compressed yet meaningful representations that can be effectively used in LLM prompts for package understanding and troubleshooting.
 
 ## Features
