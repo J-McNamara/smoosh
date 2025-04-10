@@ -97,7 +97,7 @@ def main(target: str, mode: str, output: Optional[str], force_cat: bool) -> None
         console.print(f"[bold red]Error:[/bold red] {e!s}")
         raise click.Abort() from e
     except Exception as e:
-        console.print("[bold red]An unexpected error occurred![/bold bold]")
+        console.print("[bold red]An unexpected error occurred![/bold red]")
         console.print(f"[red]{e!s}[/red]")
         raise click.Abort() from e
 
